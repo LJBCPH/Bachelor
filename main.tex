@@ -1,10 +1,15 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[dvipsnames]{xcolor}
+\usepackage[english]{babel}
 \usepackage{listings}
 \usepackage{multirow}
 \usepackage{color}
 \usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{sample.bib} %Import the bibliography file
+
 \lstset{ %
   language=R,                     % the language of the code
   basicstyle=\footnotesize,       % the size of the fonts that are used for the code
@@ -42,7 +47,6 @@
 \usepackage{longtable}
 \usepackage{amssymb}
 \usepackage{arydshln}
-\usepackage[english]{babel}
 \usepackage{titlesec}
 \graphicspath{ {pictures/} }
 \addto\captionsenglish{
@@ -70,9 +74,9 @@
 	
 	\textsc{\LARGE Copenhagen Business School}\\[1.5cm] % Main heading such as the name of your university/college
 	
-	\textsc{\Large Statistiske Modeller}\\[0.5cm] % Major heading such as course name
+	\textsc{\Large Statistik}\\[0.5cm] % Major heading such as course name
 	
-	\textsc{\large Eksamen}\\[0.5cm] % Minor heading such as course title
+	\textsc{\large Bachelorprojekt}\\[0.5cm] % Minor heading such as course title
 	
 	%------------------------------------------------
 	%	Title
@@ -80,7 +84,7 @@
 	
 	\HRule\\[0.4cm]
 	
-	{\huge\bfseries Statistiske Modeller}\\[0.4cm] % Title of your document
+	{\huge\bfseries En Generalisering af Bradley-Terry Modellen og Parameter Estimering vha. LASSO}\\[0.4cm] % Title of your document
 	
 	\HRule\\[1.5cm]
 	
@@ -139,501 +143,247 @@
 \newpage
 \pagenumbering{arabic}
 \begin{abstract}
-    #Lynhurtig Bradley-Terry modellen anvendes til at lave parvise sammenligninger af f.eks. fodboldhold styrker. i den oprindelig model (Bradley & Terry 1952) antages at der altid vil være en vinder, men da dette er en urealistisk betragtning blev modellen udvidet (Rao-Kupper 1967). til at inkludere en grænseværdiparameter som gør det muligt at indrage udfaldet uafgjort. Dette papir tager udgangspunkt i denne model og betragter anvendelsen af LASSO optimering til udvælgelsen af parametre til estimering af de forskellige holds styrke. 
+Lynhurtig Bradley-Terry modellen anvendes til at lave parvise sammenligninger af f.eks. fodboldhold styrker. i den oprindelig model (Bradley \& Terry 1952) antages at der altid vil være en vinder, men da dette er en urealistisk betragtning blev modellen udvidet (Rao-Kupper 1967). til at inkludere en grænseværdiparameter som gør det muligt at indrage udfaldet uafgjort. Dette papir tager udgangspunkt i denne model og betragter anvendelsen af LASSO optimering til udvælgelsen af parametre til estimering af de forskellige holds styrke. 
 \end{abstract}
-\section{Bradley-Terry}
+\section{Generalisering af Bradley-Terry Modellen}
 \subsection{Indledning}
-Muligvis er det her der bør stå noget af det som står i abstractet. 
-\subsection{Modellen}
-Bradley-Terry modellen er en statistik model, der bruges til at beskrive sandsynligheder for parvise sammenligninger med to udfald. Sandsynligheden for at $i$ vinder over $j$ skrives op på formen: 
+Bradley og Terry (1952) introducerer en statistisk model til at rangere f.eks. forbrugervurderinger af produkter eller styrker af fodboldhold ved parvise sammenligninger. I først nævnte eksempel vil modellen kunne bruges til at estimere sandsynligheden for at en forbruger foretrækker et produkt over et andet og i sidst nævnte eksempel til at estimere sandsynligheden for, at Brøndby vinder over FCK i deres næste opgør. I dette papir tager vi udgangspunkt i eksemplet med sammenligninger af fodboldhold. 
 
-\begin{equation}
-P(i\ vinder\ over\ j) = p_{i\cdot ij} = \frac{\pi_i}{\pi_i+\pi_j},
-\end{equation}
+\subsection{Bradley-Terry Modellen}
+Når vi sammenligner hold \textit{i} med hold \textit{j} betragter vi altid situationen $i<j$, hvor vi definerer \\$i \in \{1,..,h-1\}, j\in \{i+1,...,h\}$ og \textit{h} betegner antal hold. På denne måde undgår vi at gentage parvise sammenligninger mellem hold \textit{i} og hold \textit{j}, samt at sammenligne hold med sig selv.\\
+\textcolor{blue}{BT skriver} Sandsynligheden for at hold \textit{i} vinder over hold \textit{j} skrives op på formen:
 
-hvor vi tolker $\pi_i$ og $\pi_j$ som styrke parametre der repræsentere den styrke hhv. hold \textit{i} og hold \textit{j} har og $p_{i\cdot ij}$ er sandsynligheden for at hold \textit{i} vinder over hold \textit{j}.
-\textcolor{blue}{Modellen er overparametriseret, hvilket skal tages højde for, når vi senere skal estimere parametre.}\\
-Ved omskrivning af $p_{i\cdot ij}$ fås
-\begin{align}
-    
-    p_{i\cdot ij} = \frac{\pi_i}{\pi_i+\pi_j}=\frac{1}{1+\frac{\pi_j}{\pi_i}}=\frac{1}{1+e^{-(\log(\pi_i)-\log(\pi_j))}}=\frac{1}{1+e^{-V_{i\cdot ij}}},   
-\end{align}
-hvor $V_{i\cdot ij}=\log(\pi_i)-\log(\pi_j)$.
-\begin{align}
-&f(V_{i\cdot ij})=\frac{\partial p_{i\cdot ij}}{\partial V_{i\cdot ij}}= \frac{e^{-V_{i\cdot ij}}}{(e^{-V_{i\cdot ij}}+1)^2} \geq 0 \\
-&\int_{-\infty}^\infty f(V_{i\cdot ij}) \text{  d} V_{i\cdot ij} = 1,
-\end{align}
-kan $p_{i\cdot ij}$ opfattes som en fordelingsfunktion \textcolor{blue}{, og for givne styrke parametre opfattes, som en sandsynlighed.}\\ Hvis vi definere et holds dagsform som værende $Y_i=\pi_i+\epsilon_i$ kan sandsynligheden for at \textit{i} vinder over \textit{j} skrives som:
+\begin{center}
+$P(i\ vinder\ over\ j) = p_{i\cdot ij} = \frac{\pi_i}{\pi_i+\pi_j}$,
+\end{center}
+hvor $p_{i\cdot ij}$ betegner sandsynligheden for at hold \textit{i} vinder over hold \textit{j}. Vi tolker $\pi_i$ og $\pi_j$ som hold \textit{i} og \textcolor{red}{-}\textit{j}'s respektive styrker. Dermed kan $Y_i=\pi_i+\epsilon_i$ betegne hold \textit{i}'s dagsform. Så hold \textit{i} vinder over hold \textit{j}, hvis $Y_i>Y_j$.\\ \textcolor{blue}{Eftersom modellens parametre kan skaleres op uden at de påvirker sandsynlighederne ses modellen at være overparameteriseret på grund af skala-invarians.} Vi kan dermed ikke identificere de enkelte styrkeparametre, men vi kan identificere forholdet mellem to styrkeparametre. For at overkomme dette problem kan der lægges et bånd på, der sikrer at vi kan estimere styrkeparametrene, dette kan gøres i form af $\pi_1 = 0$ eller $\sum_i^n \pi_i = 1$. \\
+Ved omskrivning af $p_{i\cdot ij}$ kan vi udtrykke dette styrkeforhold som:
 \begin{align*}
-p_{i\cdot ij}&=P\big{(}y_i>y_j\big{)}
-\\&=P\big{(}(\pi_i-\pi_j)+(\epsilon_i-\epsilon_j)>0\big{)}
-\\&=P\big{(}(\epsilon_i-\epsilon_j)>(\pi_i-\pi_j)\big{)}
+    p_{i\cdot ij} &= \frac{\pi_i}{\pi_i+\pi_j}=\frac{1}{1+\frac{\pi_j}{\pi_i}}=\frac{1}{1+e^{-(\log(\pi_i)-\log(\pi_j))}}\\
+    &=F(V_{i\cdot ij})=\int_{-\infty}^{V_{i\cdot ij}} \frac{\partial p_{i\cdot ij}}{\partial V_{i\cdot ij}} \text{ d}V=\frac{1}{1+e^{-V_{i\cdot ij}}},
+\end{align*}
+hvor $V_{i\cdot ij}=\log(\pi_i)-\log(\pi_j)$ beskriver log-styrken for hold \textit{i} i forhold til hold \textit{j}. Det ses altså at sandsynligheden for at \textit{i} vinder over \textit{j} afhænger af forskellen i hold \textit{i} og hold \textit{j}'s styrker. Eftersom 
+\begin{align*}
+&f(V_{i\cdot ij})=\frac{\partial p_{i\cdot ij}}{\partial V_{i\cdot ij}} = \frac{e^{-V_{i\cdot ij}}}{(e^{-V_{i\cdot ij}}+1)^2} \geq 0, \\ \intertext{samt at}
+&\int_{-\infty}^\infty f(V_{i\cdot ij}) \text{  d} V_{i\cdot ij} = 1,
+\end{align*}
+er $f(V_{i\cdot ij})$ en tæthed for den logistiske fordeling. Hvor $F(V_{i\cdot ij})$ er den tilhørende fordelingsfunktion, som for givne styrke parametre kan opfattes som en sandsynlighed.\\
+Sandsynligheden for at hold \textit{i} vinder over hold \textit{j} på en given kampdag, tolkes som sandsynligheden for at hold \textit{i}'s dagsform er bedre (større) end hold \textit{j}'s:
+\begin{align*}
+p_{i\cdot ij}&=P\big{\{}y_i>y_j\big{\}}
+\\&=P\big{\{}(\pi_i-\pi_j)+(\epsilon_i-\epsilon_j)>0\big{\}}
+\\&=P\big{\{}(\epsilon_i-\epsilon_j)>(\pi_i-\pi_j)\big{\}}
 \\&=\frac{1}{1+e^{-(log(\pi_i)-log(\pi_j))}} 
 \\&=\frac{\pi_i}{\pi_i+\pi_j},\;\;
 \end{align*}
 \\
-For at forksellen $\epsilon_i-\epsilon_j$ er logistisk fordelt skal det gælde at $\epsilon_i$erne er gumbel fordelte (Ekstremværdifordelte af Type-I).
-\clearpage
-########################################################################
+For at forskellene mellem fejlledene $\epsilon_i-\epsilon_j$ er logistisk fordelt skal $\epsilon_i$'erne være uafhængige og gumbel fordelte.
 
-hvor $\pi_{ij}$ er sandsynligheden for at $i$ vinder over $j$ og $\pi_{ij}+\pi_{ji} = 1$ skal være opfyldt, til at beskrive dette forhold anvendes $\pi_i \ og \ \pi_j$ som værende styrke parametrene for de to aktører.
-Funktionen kan vises at tilhøre en eksponentiel familie, og nærmere beskrives med en logistisk fordelingsfunktion, hvilket ses ved omskrivningen af $\pi_{ij}$:\\
-\begin{align*}
-\pi_{ij} &= \frac{\pi_i}{\pi_i+\pi_j}=\frac{1}{1+\frac{\pi_j}{\pi_i}}=\frac{1}{1+e^{-(log(\pi_i)-log(\pi_j))}}   
-\end{align*}
-Herefter kan vi definere styrkeforskellen mellem de to aktører som $V = log(\pi_i)-log(\pi_j)$, hvorved vi kan omskrive funktionen til at være defineret som værende tæthedsfunktionen for en standard logistisk fordeling med lokationsparametren $\mu = 0$ og skalaparametren $s = 1$:
-\begin{align*}
-\frac{\partial \pi_{ij}}{\partial V} &= \frac{e^{-V}}{(e^{-V}+1)^2} = \frac{1}{(e^{V/2}+e^{-V/2})^2} = \frac{1}{4}\Big{(}\frac{2}{e^{V/2}+e^{-V/2}}\Big{)}^2 = \frac{1}{4}Sech^2(V/2)    
-\end{align*}
-Da differentialet nu ses at bestå af en hyperbolsk sekant, som både har den egenskab at den er symmetrisk samt i dette tilfælde opfylder $\int_{-\infty}^{\infty} \frac{1}{4}Sech^2(V/2) \; \partial V = 1$, samt at funktionen afhænger monotont af $V$, har vi at dette kan bruges som en fordelingsfunktion, hvorfor vores $\pi_{ij} \in [0,1]$. For at kunne skrive dette om til vores funktion, kan vi altså tage integralet fra $-\infty$ til $V$, som beskriver sandsynligheden for at $log(\pi_i) > log(\pi_j)$, altså at $i$ præfereres over $j$.
-\begin{align*}
-\pi_{ij} &= \frac{1}{1+e^{-V}} = \int_{-\infty}^{V} \frac{\partial \pi_{ij}}{\partial V} \partial V = \int_{-\infty}^{V} \frac{1}{4}Sech(V/2) \partial V    
-\end{align*}
-\subsection{Model som inkluderer udfaldet uafgjort}
+\subsection{Rao-Kupper Modellen}
+Indtil videre har det været en antagelse at en fodboldkamp altid har haft en vinder, men dette er ikke en realistisk antagelse, da fodboldkampe kan ende uafgjort. Det samme gælder forbrugervalget mellem to produkter. Realistisk set, kan en forbruger godt være ligeglad ved valget mellem to produkter, hvis produkterne giver ham/hende tilnærmelsesvist den samme nytte. Rao og Kupper (1967) \cite{RaoKupper} foreslår en løsning på dette dilemma, ved at udvide Bradley-Terry modellen med et grænseværdiparameter $\theta$. $\theta$ betegner den forskel i dagsform der mindst skal være mellem to hold, for at der er en vinder; hvis $\|Y_i-Y_j\| < \theta$ bliver kampen uafgjort. Rao-Kupper opskrives som integralet af en tæthed ligesom Bradley-Terry, og giver sandsynlighederne:
+\begin{equation}
+\begin{split}
+    p_{i\cdot ij}&=F(V_{i\cdot ij}-\eta)=\frac{\pi_i}{\pi_i+\theta \pi_j}\\
+    p_{j\cdot ij}&=F(V_{j\cdot ij}-\eta)=1-F(V_{i\cdot ij}+\eta)=\frac{\pi_j}{\theta \pi_i+\pi_j}\\
+    p_{0\cdot ij}&=F(V_{i\cdot ij}+\eta)-F(V_{i\cdot ij}-\eta)= \frac{\pi_i \pi_j(\theta^2 -1)}{(\pi_i+\theta \pi_j)(\theta \pi_i + \pi_j)} \label{Sandynligheder},
+\end{split}
+\end{equation}
+hvor $\eta=\log(\theta)>0 \rightarrow\theta>1$ og $p_{0\cdot ij}$ er sandsynligheden for det nye udfald, uafgjort. De tre udfald er direkte sammenlignelige med et rangeringssytem, da hvert af udfaldende ikke giver samme antal point; sejr = 3 point, uafgjort = 1 point og tab = 0 point. Ligeledes kan dette overføres til rangering af produktsammenligninger; Bedre, lige og dårligere. 
 
-Denne model kan ifølge P.V. Rao og L.L. Kupper "Ties in Paired-Comparison Experiments: A generalization of the Bradley-Terry model" (1967), udvides til at tage højde for den usikkerhed der kan være når man sammenligner to aktører, og dermed få sandsynligheden for $log(\pi_i)=log(\pi_j)$. Denne usikkerhed noterer vi med $\eta$, og kan beskrives som den forskel der minimum skal være mellem de to aktører for at bedømmeren kan præferere den ene over den anden. Dermed kan det siges at hvis $|V| < |\eta|$ vil sandsynligheden for at $\pi_i > \pi_j$ være tæt på 50\%, da funktionen som tidligere nævnt er symmetrisk, og mere præcist symmetrisk i anden aksen. For at få usikkerheden med, kan vi implementere den del af sandsynligheden som usikkerheden indebærer, ved at indsætte den i den øvre grænse af det bestemte integral ved:\\  
+\subsection{Parameter Estimering}
+\textcolor{blue}{Evt. noget intro tekst}
+\textcolor{blue}{Rao-Kupper er en delmodel af den almindelige multinomialfordelingsmodel.}\\
+Lad \textit{h} være antal hold, og lad $X_{ij}$ være en tredimensoinel uafhængig stokastisk variabel, som repræsentere en kamp mellem hold \textit{i} og hold \textit{j}. $X_{ij}$'s, tilhørende udfaldsområde er dermed givet ved $(X_{i\cdot ij},\;X_{j\cdot ij},\;X_{0\cdot ij})$, som hhv. repræsentere sejr til hold \textit{i}, sejr til hold \textit{j} og uafgjort, hvor: 
 \begin{align*}
-\pi_{ij} &= \int_{-\infty}^{V-\eta} \frac{1}{4}Sech(V/2) \partial V
+   &P\{X_{ij}=X_{i\cdot ij}\}=p_{i\cdot ij} &&P\{X_{ij}=X_{j\cdot ij}\}=p_{j\cdot ij} &&P\{X_{ij}=X_{0\cdot ij}\}=p_{0\cdot ij}
+\end{align*}
+Yderligere lader vi $r_{ij}$ være antal gentagelser af $X_{ij}$ (antal kampe mellem hold \textit{i} og hold \textit{j}), samt $Y_{ij}=(Y_{i\cdot ij},Y_{j\cdot ij},Y_{0\cdot ij})$ være den tilhørende kontingenstabel givet ved:
+\begin{align*}
+    &Y_{i\cdot ij}=\sum_{k=1}^{r_{ij}}1_{\{X_{ijk}=X_{i\cdot ij}\}} &&Y_{j\cdot ij}=\sum_{k=1}^{r_{ij}}1_{\{X_{ijk}=X_{j\cdot ij}\}} &&Y_{0\cdot ij}=\sum_{k=1}^{r_{ij}}1_{\{X_{ijk}=X_{0\cdot ij}\}}
 \end{align*}
 \\
-Hvor $y_i=\pi_i+\epsilon_i$ kan vi nu opskrive sandsynligheden for at $i$ præfereres til $j$ som:
+Til at estimere styrkeparametrene og $\theta$ vil vi gøre brug af maksimere likelihooden, hvor likelihood-funktionen opstilles ved multinomialfordelingen med sandsynlighederne fra (\ref{Sandynligheder}). Likelihooden for de observerede udfald bliver dermed:
 \begin{align*}
-\pi_{ij}&=P\big{(}y_i>y_j+\eta\big{)}
-\\&=P\big{(}(\pi_i-\pi_j)+(\epsilon_i-\epsilon_j)>\eta\big{)}
-\\&=P\big{(}(\epsilon_i-\epsilon_j)>(\pi_i-\pi_j)+\eta\big{)}
-\\&=\frac{1}{1+e^{-(log(\pi_i)-log(\pi_j)-\eta)}} 
-\\&=\frac{\pi_i}{\pi_i+\theta \pi_j},\;\;\theta = e^\eta
-\end{align*}
-\\
-Da sandsynlighederne skal summere op til 1, har vi en restsandsynlighed som beskriver udfaldet, hvor der ikke kan bestemmes om $i$ er præfereret over $j$ eller omvendt ved:
-\begin{align*}
-\pi_{i\cdot ij} &= P(\pi_i > \pi_j) = \frac{\pi_i}{\pi_i+\theta \pi_j}\\
-\pi_{j\cdot ij} &= P(\pi_j > \pi_i) = \frac{\pi_j}{\pi_j+\theta \pi_i}\\
-\pi_{0\cdot ij} &= P(\pi_j = \pi_i) = 1 - \Big{(}P(\pi_j > \pi_i) + P(\pi_i > \pi_j)\Big{)}= \frac{\pi_i \pi_j(\theta^2 -1)}{(\pi_i+\theta \pi_j)(\theta \pi_i + \pi_j)} 
-\end{align*}
-hvor det selvfølgelig gælder, at $\pi_{i\cdot ij}=\pi_{i\cdot ji}$ samt at $\theta\geq1$ for at holde betingelserne \\
-$\pi_{i\cdot ij}\geq0,\pi_{j\cdot ij}\geq0,\pi_{0\cdot ij}\geq0$. 
-\\
-\subsection{Estimering af parametre}
-Vi kan opskrive Bradley-Terry modellen, som en multinomial fordeling: Ved først at definere antal sammenligninger $s=h(h-1)/2$ af $h$ forskellige (fx) hold eller produkter, samt antal repetitioner af disse sammenligner $r$. Observere vi $r$ repetitioner af $s$ uafhængige kategorisk variable: $$
-\sum_{i<j}^s\sum_1^r\pi_{ij}^r
-$$
-Med de tre sandsynligheder: $\pi_{i\cdot ij},\pi_{j\cdot ij},\pi_{0\cdot ij}$
-og dertilhørende udfaldstabel som værende:
-$$
-Y=(Y_{i\cdot ij},Y_{j\cdot ij},Y_{0\cdot ij}),\;\;\;Y_{k\cdot ij}=\sum^r1_{\{\pi_{k\cdot ij}\}},\;\;\;\;k\in\{i,j,0\}
-$$
-Likelihooden bliver således:
-\begin{align*}
-\mathcal{L}(\pi_1,...,\pi_h,\theta) &= \prod_{i<j}\pi_{i\cdot ij}^{Y_{i\cdot ij}}\pi_{j\cdot ij}^{Y_{j\cdot ij}}\pi_{0\cdot ij}^{Y_{0\cdot ij}}\\
+\mathcal{L}(\pi_1,...,\pi_h,\theta) &= \prod_{i<j}p_{i\cdot ij}^{Y_{i\cdot ij}}p_{j\cdot ij}^{Y_{j\cdot ij}}p_{0\cdot ij}^{Y_{0\cdot ij}}\\
 &= \prod_{i<j}\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{Y_{i\cdot ij}}
 \;\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}^{Y_{j\cdot ij}}
 \Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{Y_{0\cdot ij}}\\
-\end{align*}
-$Y_{0\cdot ij}=r-Y_{i\cdot ij}-Y_{j\cdot ij}$: 
-\begin{align}
-\mathcal{L}(\pi_1,...,\pi_h,\theta)
 &=\prod_{i<j}\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{Y_{i\cdot ij}}
 \;\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}^{Y_{j\cdot ij}}
-\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{r-{Y_{i\cdot ij}}-{Y_{j\cdot ij}}}\\
-&=(\theta^2-1)^{Y_{0}}\prod_i\pi_i^{Y_{i}}\prod_{i\neq j}\big{(}\pi_i+\theta\pi_j\big{)}^{-Y_{i\cdot ij}}
-\end{align}
-hvilket giver os loglikelihooden: 
+\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{r_{ij}-{Y_{i\cdot ij}}-{Y_{j\cdot ij}}}\\
+\end{align*}
+\textcolor{blue}{Sidstenævnte omskrivelse er tilføjet, for at lette notationer, samt lette udledninger af afledte.}
+For nemmere at kunne arbejde med likelihooden, opskriver vi log-likelihooden: 
 \begin{align*}
 \textit{l}(\pi,\theta)
-&=\sum_{i<j}\Big{[}Y_{i\cdot ij}\;\log\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}
-+ Y_{j\cdot ij}\;\log\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}
-+ (r-Y_{i\cdot ij}-Y_{j\cdot ij}) \log \Big{(}\;\log\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}\Big{]}\\
+&=\sum_{i<j}\Big{[}Y_{i\cdot ij}\log\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}
++ Y_{j\cdot ij}\log\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}\\
+&+ (r_{ij}-Y_{i\cdot ij}-Y_{j\cdot ij}) \log\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}\Big{]}
+\end{align*}
+Som log-likelihooden ser ud i ovenstående, er der ikke noget der hindrer negative styrker. Dog er det klart at et forhold mellem en negativ styrke og en positiv styrke vil være misvisende, hvorfor vi log-transformerer styrkerne, ved at sætte $\gamma_i=\log(\pi_i)$:\\
+\begin{align*}
 \textit{l}(\gamma,\theta)
 &=\sum_{i<j}\Big{[}Y_{i\cdot ij}\Big{(}\gamma_i-\log(e^{\gamma_i}+\theta e^{\gamma_j})\Big{)}
 +Y_{j\cdot ij}\Big{(}\gamma_j-\log(e^{\gamma_j}+\theta e^{\gamma_i})\Big{)}\\
-& +(r-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(} \log(\theta^2-1)+\gamma_i+\gamma_j-\log(e^{\gamma_i}+\theta e^{\gamma_j})-\log(e^{\gamma_j}+\theta e^{\gamma_i})\\
+& +(r_{ij}-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(} \log(\theta^2-1)+\gamma_i+\gamma_j-\log(e^{\gamma_i}+\theta e^{\gamma_j})-\log(e^{\gamma_j}+\theta e^{\gamma_i})\Big{)}\\
 &\text{hvor }\gamma_i=\log (\pi_i)
 \end{align*}
-Ved at indsætte $x_i^T\beta=\gamma_i$, hvor $x_i$ er den i'te søjle i designmatricen og $\beta$ vores parameter vektor fås:
+For at bestemme maksimum-likelihood estimaterne for vores parametre, har vi valgt at gøre brug af den iterative metode, Newton-Raphson. Newton-Raphson opstilles på følgende form, med den observerede information og scorefunktionen:
+\begin{align*}
+v_{k+1} = v_{k} + \textit{i}(v_{k})^{-1}\textit{s}(v_{k}),
+\end{align*}
+hvor $v_{k}$ er en vektor bestående af vores styrkeparametre, $\pi_i$ samt $\theta$. Eftersom parvise sammenligninger i praksis, afhænger af den data der er indsamlet, vil det være nødvendigt at have et udtryk for likelihooden i form af den data der er indsamlet. For at gøre dette, definerer vi et udtryk for samtlige $\log( \pi_i)$'er (også for referencegruppen). Dette indses ved indsættelse i den lineære sammenhæng mellem styrkerne:
+\begin{align*}
+    p_{i\cdot ij} = \frac{1}{1+ e^{-(log(\pi_i-log(\pi_j)}} = \frac{1}{1+ e^{-\beta(x_i^T-x_j^T)}},
+\end{align*}
+hvor $x_i$ er den i'te søjle i designmatricen og $\beta$ er vores parameter vektor. Designmatricens \textit{i}'te søjle indeholder altså data for hold \textit{i}, hvor den \textit{k}'te række indeholder data til den \textit{k}'te parameter i parametervektoren $\beta$. \\
+I vores tilfælde vil det være data der beskriver to fodboldhold, men formen vil forblive uændret hvis det er to produkter der bliver sammenlignet.
+%########################################################################
+%\textcolor{olive}{Vi skal her overveje, om vi hellere vil skrive pseudo algoritme, med %de afledte ift, log($\pi_i$) istedet. Vi skal efterfølgende kommentere på de betingelser %der skal være opfyldt, for at vi ved at vores algoritme rent faktisk finder MLE %estimaterne.}
+%\subsection{Numerisk Estimation af parametre vha. MM-algoritme}
+%Estimationen af styrkeparametrene samt $\theta$
+Til at implementere dette forhold i log-likelihooden, som vi skal maksimere ud fra parametrerne, indsætter vi $\gamma_i=x_i^T\beta$:
 \begin{align*}
 \textit{l}(\beta,\theta)
-&=\sum_{i<j}\sum_r\Big{[}Y_{i\cdot ij}\Big{(}x_i^T\beta-\log(e^{x_i^T\beta}+\theta e^{x_j^T\beta})\Big{)}
+&=\sum_{i<j}\Big{[}Y_{i\cdot ij}\Big{(}x_i^T\beta-\log(e^{x_i^T\beta}+\theta e^{x_j^T\beta})\Big{)}
 +Y_{j\cdot ij}\Big{(}x_j^T\beta-\log(e^{x_j^T\beta}+\theta e^{x_i^T\beta})\Big{)}\\
-& +(1-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(} \log(\theta^2-1)+x_i^T\beta+x_j^T\beta-\log(e^{x_i^T\beta}+\theta e^{x_j^T\beta})-\log(e^{x_j^T\beta}+\theta e^{x_i^T\beta})\Big{)}\Big{]}
+& +(r_{ij}-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(} \log(\theta^2-1)+x_i^T\beta+x_j^T\beta-\log(e^{x_i^T\beta}+\theta e^{x_j^T\beta})-\log(e^{x_j^T\beta}+\theta e^{x_i^T\beta})\Big{)}\Big{]}
 \end{align*}
-Første ordens betingelserne bliver:
-\textcolor{red}{\begin{align*}
-\frac{\partial \ell(\beta;\theta)}{\partial \beta_k}&= 
-\sum_{i<j}\sum_r\Big{[}
-Y_{i\cdot ij}\Big{(}x_{ik}^T-\frac{x_{ik}^T e^{x_i^T\beta} +\theta x_{jk}^T e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)}
-+Y_{j\cdot ij}\Big{(}x_{jk}^T-\frac{x_{jk}^T e^{x_j^T\beta} +\theta x_{ik}^T e^{x_i^T\beta}}{\theta e^{x_i^T\beta} +e^{x_j^T\beta}}\Big{)}\\
-&+(1-Y_{i\cdot ij}-Y_{j\cdot ij})\Big{(}x_{ik}^T+x_{jk}^T-\frac{x_{ik}^T e^{x_i^T\beta} +\theta x_{jk}^t e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}-\frac{x_{jk}^T e^{x_j^T\beta} +\theta x_{ik}^T e^{x_i^T\beta}}{ \theta e^{x_i^T\beta}+e^{x_j^T\beta}}\Big{)}\Big{]}
-\end{align*}
-}
+Første ordens betingelserne til scorefunktionen for $\beta$ og $\theta$ bliver:
 \begin{align*}
+\frac{\partial \ell(\beta;\theta)}{\partial \beta}&= 
+\sum_{i<j}\Big{[}\Big{(}
+(r_{ij}-Y_{i\cdot ij})\Big{(}-\frac{\theta e^{x_i^T\beta}}{e^{x_j^T\beta}+\theta e^{x_i^T\beta}}\Big{)}+(r_{ij}-Y_{j\cdot ij})\Big{(}\frac{\theta e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)}\Big{)}(x_i-x_j)\Big{]},\\
 \frac{\partial \ell(\beta;\theta)}{\partial \theta}&=
-\sum_{i<j}\sum_r
+\sum_{i<j}
 \Big{[}
- Y_{i\cdot ij}\Big{(}-\frac{e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)}
- +Y_{j\cdot ij}\Big{(}-\frac{e^{x_i^T\beta}}{\theta e^{x_i^T\beta}+ e^{x_j^T\beta}}\Big{)}\\
- &+(1-Y_{i\cdot ij}-Y_{j\cdot ij})\Big{(}\frac{2\theta}{\theta^2-1}-\frac{e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}-\frac{e^{x_i^T\beta}}{\theta e^{x_i^T\beta}+ e^{x_j^T\beta}}\Big{)}
- \Big{]}
+ (r_{ij}-Y_{i\cdot ij}-Y_{j\cdot ij})\Big{(}\frac{2\theta}{\theta^2-1}\Big{)}\\
+ &+(r_{ij}-Y_{i\cdot ij})\Big{(}-\frac{e^{x_i^T\beta}}{\theta e^{x_i^T\beta}+e^{x_j^T\beta}}\Big{)}
+ +(r_{ij}-Y_{j\cdot ij})\Big{(}-\frac{e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)}
+\Big{]},\\
 \end{align*}
-
+hvor førsteordensbetingelsen ift. $\beta$ bliver en vektor med længden lig antal rækker i designmatricen. Dermed kan scorefunktionen opstilles som:
 \begin{equation}
-\frac{\partial \ell(\beta;\theta)}{\partial \beta_k}= 
-\sum_{i<j}\sum_r\Big{[}
-(1-Y_{i\cdot ij})\Big{(}x_{jk}-\frac{x_{jk} e^{x_j^T\beta} +\theta x_{ik} e^{x_i^T\beta}}{e^{x_j^T\beta}+\theta e^{x_i^T\beta}}\Big{)}+(1-Y_{j\cdot ij})\Big{(}x_{ik}-\frac{x_{ik} e^{x_i^T\beta} +\theta x_{jk} e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)}\Big{]}
-\end{equation}
-\textcolor{red}{
-\begin{equation}
-\frac{\partial \ell(\beta;\theta)}{\partial \theta}=
-\sum_{i<j}\sum_r\Big{[}
- (1-Y_{i\cdot ij})\Big{(}\frac{2\theta}{\theta^2-1}-\frac{e^{x_i^T\beta}}{e^{x_j^T\beta}+\theta e^{x_i^T\beta}}\Big{)}
-+(1-Y_{j\cdot ij})\Big{(}\frac{2\theta}{\theta^2-1}-\frac{e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)} \Big{]}
-\end{equation}}
-
-Anden ordens betingelserne bliver:
-\textcolor{red}{\begin{align*}
-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta_k^2}
-&= \sum_{i<j}\sum_r 
-\Big{[}
-\Big{(}-\frac{Y_{i\cdot ij}}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}-\frac{Y_{j\cdot ij}}{(\theta e^{x_i^T\beta}+ e^{x_j^T\beta})^2}-\frac{1-Y_{i\cdot ij}-Y_{j\cdot ij}}{(\theta e^{x_i^T\beta}+ e^{x_j^T\beta})^2}-\frac{1-Y_{i\cdot ij}-Y_{j\cdot ij}}{( e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\\
-\Big{)}&\theta (x_{ik}-x_{jk})^2 e^{x_i^T\beta+x_j^T\beta}\Big{]}\\
-\frac{\partial^2 \ell(\beta;\theta)}{\partial \theta^2}
-&= \sum_{i<j}\sum_r \Big{[} (1-Y_{i\cdot ij})\Big{(}-\frac{2(\theta^2+1)}{(\theta^2-1)^2}+\frac{(e^{x_i^T\beta})^2}{(\theta e^{x_i^T\beta} + e^{x_j^T\beta})^2}\Big{)}\\
-&+(1-Y_{j\cdot ij})\Big{(}-\frac{2(\theta^2+1)}{(\theta^2-1)^2}+\frac{(e^{x_j^T\beta})^2}{( e^{x_i^T\beta}+\theta e^{x_j^T\beta} )^2}\Big{)}\Big{]}
-\\
-\end{align*}}
-
-\begin{align*}
-
-\end{align*}
-
-
-\begin{align*}
-\frac{\partial^2 \ell(\beta;\theta)}{\partial \theta^2}
-&= \sum_{i<j}\sum_r 
-\Big{[}
-Y_{i\cdot ij}\Big{(}\frac{e^{2x_j^T\beta}}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}
-+Y_{j\cdot ij}\Big{(}\frac{e^{2x_i^T\beta}}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}\Big{)}\\
-&+(1-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(}-\frac{2(\theta^2+1)}{(\theta^2-1)^2}+\frac{e^{2x_j^T\beta}}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}+\frac{e^{2x_i^T\beta}}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}\Big{)}\Big{]}\\
-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta_k^2}
-&= \sum_{i<j}\sum_r \Big{[}\Big{(} -\frac{(1-Y_{i\cdot ij})}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}-\frac{(1-Y_{j\cdot ij})}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}e^{x_i^T\beta+x_j^T\beta}\theta(x_{ik}-x_{jk})^2 \Big{]}\\
-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta_k\partial \beta_q}
-&= \sum_{i<j}\sum_r \Big{[}\Big{(}-\frac{(1-Y_{i\cdot ij})}{(\theta e^{x_i^T\beta}+ e^{x_j^T\beta})^2} -\frac{(1-Y_{j\cdot ij})}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}\theta e^{x_i^T\beta+x_j^T\beta}(x_{ik}-x_{jk})(x_{iq}-x_{jq})\Big{]}\\
-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta_k\partial \theta}
-&= \sum_{i<j}\sum_r\Big{[}\Big{(}
--(1-Y_{i \cdot ij})\frac{x_{ik}-x_{jk}}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}
--(1-Y_{j \cdot ij})\frac{x_{jk}-x_{ik}}{( e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}e^{x_i\beta+x_j\beta}\Big{]}
-\end{align*}
-
-\subsection{MED BRUG AF $\eta=\log(\theta)$}
-\begin{align*}
-\textit{l}(\pi,\theta)
-&=\sum_{i<j}\Big{[}Y_{i\cdot ij}\;\log\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}
-+ Y_{j\cdot ij}\;\log\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}
-+ (r-Y_{i\cdot ij}-Y_{j\cdot ij}) \log \Big{(}\;\log\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}\Big{]}\\
-\textit{l}(\gamma,\eta)
-&=\sum_{i<j}\Big{[}Y_{i\cdot ij}\Big{(}\gamma_i-\log(e^{\gamma_i}+ e^{\gamma_j+\eta})\Big{)}
-+Y_{j\cdot ij}\Big{(}\gamma_j-\log(e^{\gamma_j}+ e^{\gamma_i+\eta})\Big{)}\\
-& +(r-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(} \log(e^{2\eta}-1)+\gamma_i+\gamma_j-\log(e^{\gamma_i}+ e^{\gamma_j+\eta})-\log(e^{\gamma_j}+e^{\gamma_i+\eta}),\\
-&\text{hvor }\gamma_i=\log (\pi_i)\text{ og }\eta=\log(\theta)
-\end{align*}
-
-\begin{equation}
-\frac{\partial \ell(\beta;\eta)}{\partial \eta}=
-\sum_{i<j}\sum_r\Big{[}
- (1-Y_{i\cdot ij})\Big{(}\frac{2\theta}{\theta^2-1}-\frac{e^{x_i^T\beta}}{e^{x_j^T\beta}+\theta e^{x_i^T\beta}}\Big{)}
-+(1-Y_{j\cdot ij})\Big{(}\frac{2\theta}{\theta^2-1}-\frac{e^{x_j^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}}\Big{)} \Big{]}
-\end{equation}
-
-
-
-
-
-Newton rhapson:
-\begin{center}
-$
-\begin{bmatrix}
-\beta^{k+1} \\
-\theta^{k+1}
+S(\beta,\theta) = \begin{bmatrix}
+\frac{\partial \ell(\beta;\theta)}{\partial \beta}\\
+\frac{\partial \ell(\beta;\theta)}{\partial \theta}
 \end{bmatrix}
-=
-\begin{bmatrix}
-\beta^{k} \\
-\theta^{k}
+\label{score}
+\end{equation}
+
+Udledningerne til andensordsbetingelserne bliver ligeledes: 
+\begin{align*}
+\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta^2}
+&= \sum_{i<j}\Big{[}\Big{(} -\frac{(r_{ij}-Y_{i\cdot ij})}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}-\frac{(r_{ij}-Y_{j\cdot ij})}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}e^{x_i^T\beta+x_j^T\beta}\theta(x_{i}-x_{j})^2 \Big{]},\\
+\frac{\partial^2 \ell(\beta;\theta)}{\partial \theta^2}
+&= \sum_{i<j} 
+\Big{[}
+(r_{ij}-Y_{i\cdot ij}-Y_{j\cdot ij})\Big{(}-\frac{2(\theta^2+1)}{(\theta^2-1)^2}\Big{)}\\
+&+(r_{ij}-Y_{i\cdot ij})\Big{(}\frac{e^{2x_i^T\beta}}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}\Big{)}
++(r_{ij}-Y_{j\cdot ij})\Big{(}\frac{e^{2x_j^T\beta}}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}\Big{]},
+\\
+\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta\partial \theta}
+&= \sum_{i<j}\Big{[}\Big{(}
+-\frac{(r_{ij}-Y_{i \cdot ij})}{(\theta e^{x_i^T\beta}+e^{x_j^T\beta})^2}
++\frac{(r_{ij}-Y_{j \cdot ij})}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})^2}\Big{)}e^{x_i\beta+x_j\beta}(x_{i}-x_{j})\Big{]},
+\end{align*}
+hvorved vi nu får at andenordensbetingelsen ift.$\beta$ bliver en kvadratisk matrice, hvorfor den observerede informationen opskrives som en symmetrisk blok-matrix på formen
+\begin{equation}
+i(\beta,\theta) = -\begin{bmatrix}
+\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta^2} &\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta} \\
+\Big{(}\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta}\Big{)}^T & \frac{\partial \ell(\beta;\theta)}{\partial \theta^2}
 \end{bmatrix}
-- i(\beta^k,\theta^k)^{-1}s(\beta^k,\theta^k)
-$
-\end{center}
-\begin{equations}
-\begin{align}
- \frac{\partial \ell(\pi;\theta)}{\partial \pi_i}&= 
-\sum_{j(\neq i)}\frac{r-Y_{j\cdot ij}}{\hat{\pi_i}}-\sum_{j(\neq i)}\frac{r-Y_{j\cdot ij}}{\hat{\pi_i}+\theta \pi_j}-\sum_{j(\neq i)}\frac{\theta (r-Y_{i\cdot ij})}{\pi_j + \theta \hat{\pi_i}}=0\\
-\frac{\partial \ell(\pi;\theta)}{\partial \theta}&=
-\sum_{i<j}\frac{2\hat{\theta}(r-Y_{i\cdot ij}-Y_{j\cdot ij})}{\hat{\theta}^2-1}
--\sum_{i<j}\frac{\pi_i(r-y_{j\cdot ij})}{\pi_j+\hat{\theta}\pi_i}
--\sum_{i<j}\frac{\pi_j(r-y_{i\cdot ij})}{\pi_i +\hat{\theta}\pi_j}=0\\
-\frac{\partial \ell(\pi;\theta)}{\partial \lambda}&=
-\sum_i(\pi_i)=1
-\end{align}
-\end{equations}
+\label{inf}
+\end{equation}
+Likelihooden konvergerer mod et maksimum givet scorefunktionen (\ref{score}) og den observerede information (\ref{inf}), hvis den observerede info(\ref{inf}) er positiv semi-definit. Da $i(\beta,\theta)$ er symmetrisk kan vi benytte Albert (1969;1972)'s Theorem \\\textbf{ THEOREM 9.1.6:} \textit{Lad A være symmetrisk, så:}
+\begin{flalign*}
+&M = \begin{bmatrix}
+A & B\\
+C & D
+\end{bmatrix}\geq 0 \iff &\\
+&(i)\; D\geq0\\
+&(ii)\; C=D^{-1}DC\\
+&(iii)\; A\geq BD^{-1}C\\
+\end{flalign*}  
+ad (\textit{i}): 
+Vi ønsker at vise; $-\frac{\partial^2 \ell(\beta;\theta)}{\partial \theta^2} \succ 0 \text{ og } \iff (r_{ij}- Y_{i\cdot ij}-Y_{j\cdot ij}) \frac{2(\theta^2+1)}{(\theta^2-1)^2}>(r_{ij}-Y_{i\cdot ij})p_{i\cdot ij}^2 + (r_{ij}-Y_{j\cdot ij})p_{j\cdot ij}^2$. Det antages, at vi har mindst én uafgjort kamp i det datasæt vi undersøger, $(r_{ij}- Y_{i\cdot ij}-Y_{j\cdot ij}) > 0$.
+\\Observation I: Når $Y_{0\cdot ij}$ bliver meget lille konvergerer $\theta$ mod 1, det medfører venstre siden i uligheden bliver numerisk stor. $p_{i\cdot ij}^2$ og $p_{j\cdot ij}^2$ vil også blive større, men de to kvadrerede sandsynligheder vil stadig have en sum mindre end 1.\\
+Observation II: Når $Y_{0\cdot ij}$ er meget stor vil både venstre og højre side konvergere mod 0. Dette ses for venstresiden da $\theta$ går mod  $\infty$, og for højresiden da sandsynlighederne for sejr til hold $i$ og $j$ går mod 0. Hvilken af dem der vægter højest kan ikke siges uden konkrete observationer for $Y$'erne. Dog vil tilfældet hvor $Y_{0 \cdot ij}$ er større end $Y_{i \cdot ij} \text{ og } Y_{j \cdot ij}$ for mange hold, være yderst sjældent da udfaldet uafgjort ikke fremkommer så hyppigt, som de andre to tilsammen.\\
+ad (\textit{ii}): Det er klart at, da $D$ er endimensionel er D altid invertibel, og dermed $D D^{-1}=1 \rightarrow C=C$.\\
+ad (\textit{iii}):
+Det er klart at A i vores tilfælde altid vil være positiv, da $-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta^2}$ kun består af positive led.
+Derudover har vi at $BD^{-1}C$ også er positiv, da $D^{-1}>0$ eftersom D i vores tilfælde er endimensionelt, samt at eftersom B og C altid vil have samme fortegn, vil deres produkt være positivt. Hvorvidt denne ulighed er opfyldt, vil 
+i høj grad komme an på fordelingen af $Y$'erne. \\\\
+Det kan altså ikke konkluderes at vores observerede information er positiv semi-definit for samtlige $\theta$'er. Hvorimod $\beta$'erne for et låst $\theta$, vil konvergere, (da A altid er positiv). \\
+For at være sikker på, at vores log-likelihood konvergerer mod et maksimum, kan der gøres en af følgende tiltag:\\
+1) Finde Profillikelihooden for $\beta$'erne, hvor $\theta$ holdes fast.\\
+2) For hvert skridt i Newton-Raphton tjekkes der for om det givne $\theta$, opfylder \textit{i), iii)} fra theoremet 9.1.6.\\
+I praksis vil tiltag 2), være mere medgørelig at implementere, eftersom 1) vil kræve markant flere iterationer, da der først skal itereres over $\beta$'erne og derefter over $\theta$. Eftersom vi ikke ved præcist hvordan $\theta$ vil opføre sig, vil det være en god idé at implementere en skridthalvering. Hvis $\theta$ bevæger sig ud af mængden der ikke opfylder betingelserne, kan man iterere tilbage, hvor hvert skridt halveres yderligere, indtil vi er inde i mængden igen. Metoden til at finde profillikelihooden i praksis ville være at udføre Newton-Raphson hvor $\theta$ er i et interval, eksempelvis fra 1.01 til 2. Hvis der ikke findes et maksimum, kan man udvide dette interval.
 
-\begin{equations} 
-\begin{align}
-\frac{\partial^2 \ell(\pi;\theta)}{\partial \pi_i^2}&= 
--\sum_{j(\neq i)}\frac{r-Y_{j\cdot ij}}{\hat{\pi_i}^2}+\sum_{j(\neq i)}\frac{r-Y_{j\cdot ij}}{(\hat{\pi_i}+\theta \pi_j)^2}+\sum_{j(\neq i)}\frac{\theta^2 (r-Y_{i\cdot ij})}{(\pi_j+\theta \hat{\pi_i})^2}=0\\
-\frac{\partial^2 \ell(\pi;\theta)}{\partial \theta^2}&=
-\sum_{i<j}\frac{\big{(}2(r-Y_{i\cdot ij}-Y_{j\cdot ij})\big{)}}{(\theta^2-1)}
-+\sum_{i<j}\big{(}\frac{r-Y_{j\cdot ij}}{(\pi_i+\theta \pi_j)^2}+\frac{r-Y_{i \cdot ij}}{(\pi_j+\theta \pi_i)^2}\big{)}\pi_i\pi_j\\
-\frac{\partial^2 \ell(\pi;\theta)}{\partial \pi_i \partial \pi_j}&=
-\frac{\theta(r-Y_{j\cdot ij})}{(\pi_i+\theta\pi_j)^2}+\frac{\theta(r-Y_{i\cdot ij})}{(\pi_j+\theta\pi_i)^2}\\
-\frac{\partial^2 \ell(\pi;\theta)}{\partial\pi_i\partial\theta}&=
-\sum_{j(\neq i)}\frac{\pi_j(r-Y_{j\cdot ij})}{(\pi_i+\theta\pi_j)^2}
-+\sum_{j(\neq i)}\frac{\theta\pi_i(r-Y_{i\cdot ij})}{(\pi_j+\theta\pi_i)^2}
-\end{align}
-\end{equations}
-For at estimere vores parametre anvender vi Newton-Rhapson algoritmen:
+\subsection{Hypotesetest af modellen}
+Eftersom modellen skal anvendes i praksis, vil det være nødvendigt at teste den, for at verificere at den teoretiske model kan anvendes med en vis sikkerhed på det givne data. Det er antaget at det valgte datasæt er komplet, repræsentativt og stort. \\
+På trods af at dataet er valgt ud fra forventningen, om at de beskrivende variable afspejler forholdet mellem holdenes styrker, kan dette ikke antages at være gældende. For at verificere at dataet er beskrivende, vil vi gøre brug af en log-likelihood ratio test på parametrene, på formen:\\
+$H_0: \hat{\beta} = 0$\\
+Hvis der ikke er evidens for at $\hat{\beta}$'erne er forskellige fra 0, vil det betyde at holdenes styrker ikke har nogen indflydelse på udfaldene (da alle styrkerne vil blive ens). Vi sætter dermed vores test-statistik op, hvor log-likelihooden maksimeres ift. $\theta$ med $\hat{\beta}$ holdt fast lig 0:\\
 \begin{align*}
-    \beta^{k+1}=\beta^k+i(\pi^{(k)},\theta^{(k)})^{-1}s(\pi^{(k)},\theta^{(k)}),
+LR = -2\Big{(}\ell (\beta_{MLE},\theta_{MLE})-\text{max}_\theta \;\ell (\beta_{H_0},\theta)\Big{)}
 \end{align*}
-hvor $i(\pi,\theta)$ er informationsmatricen og s er gradienten.
-For at estimere forskellen i styrkeforholdene, kan vi omskrive (1) til:
-\begin{center}
-$p_{ij} = \frac{1}{1+e^{\beta(x_i-x_j)}}$
-\end{center}
-Her beskriver $x_i$ den \textit{i}'te søjle i designmatricen, som indeholder beskrivende data tilhørende hold \textit{i} og $\beta$-vektoren som værende parametervektoren. 
-\newpage
-\textcolor{red}{
-Til at beskrive disse sandsynligheder simultant vil det være oplagt at bruge multinomalfordelingen, og derfor definerer vi $n_{ij}$ til at være antal gange $i$ har 'vundet' over $j$, og $N_{ij}$ være antal gange $i$ og $j$ er blevet vurderet op imod hinanden. Eftersom der ofte vil være flere end to aktører der skal sammenlignes, definerer vi $t$ som værende antal aktører og $\{i,j\} \in \{i \neq j, 1 \leq i, j \leq t\}$. Derudover har vi at $N_{ij}$ er defineret af uafhængige sammenligninger med sandsynlighederne $\pi_{ij}$, kan $n_{ij}$ beskrives med en multinomialfordeling med antalsparameter $r = \sum_{i < j} N_{ij}$ og sandsynlighedsparametrene $\pi_{i\cdot ij},\pi_{j\cdot ij} \; og \; \pi_{0\cdot ij}$. \textcolor{blue}{Denne model kan beskrive parvise sandsynligheder for $2,...,l$ antal hold, og dermed $\binom{l}{2}$ uafhængige(?) sammenligninger, med $\binom{l}{2}$ - (l-1) frihedsgrader.} De parvise sammenligninger mellem $n_{ij} \ og \ n_{ji}$ kan ved hjælp af en kontingenstabel beskrives på formen:
-}
-$$
-A = 
+Her antages det at for store stikprøver er LR omtrent $\chi^2$-fordelt, med $(k-1)$ frihedsgrader. \\
+Vi undlader at teste for om $\theta=1$, da den udvidede model dermed bliver nyttesløs, eftersom udfaldet uafgjort vil være udeladt fra modellen. \\\\
+HER
+\textbf{standardfejl for de forklarende variable ($\beta$'er) og grænseværdiparameter $\theta$}
+Først opstilles dispersionsmatricen $\hat{\Sigma}$(kovariansmatricen): \textcolor{blue}{**Mener at fordi det er numerisk kan vi godt bruge observationen, ellers skal vi lige have beregnet fisher informationen og brugt den i stedet*** }
+\begin{align*}
+&\hat{\Sigma}=i(\beta,\theta)^{-1}=
+\Big{(}-\begin{bmatrix}
+\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta^2} &\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta} \\
+\Big{(}\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta}\Big{)}^T & \frac{\partial \ell(\beta;\theta)}{\partial \theta^2}
+\end{bmatrix}\Big{)}^{-1}\\
+\end{align*}
+\begin{align}
+\intertext{Standardfejlene $\hat{\sigma}_\beta$ og $\hat{\sigma}_\theta$ findes ved kvadratroden af diagonalen af $\hat{\Sigma}$}
+\hat{\sigma}_{\beta,\theta}=\sqrt{\text{diag}(\hat{\Sigma})}=
 \begin{bmatrix}
-&& Tabendehold &&
-\\   
-Vindendehold & H_1 & H_2 & H_3 & \cdots & H_l
-\\ H_1 & - & n_{12} & n_{13} & \cdots & n_{1l} 
-\\ H_2 & n_{21} & - & n_{23} & \cdots & n_{2l}
-\\ H_3 & n_{31} & n_{32} & - & \cdots & n_{3l}
-\\ \vdots & \vdots & \vdots & \vdots & - & \vdots
-\\ H_l & n_{l1} &  n_{l2} & n_{l3} & \cdots & -
-\end{bmatrix} 
-$$
-
-\subsection{Generel model med forskel på ude og hjemme}
-Første mulighed, er at tilføje hjemmebanefordelen som en enkelt kategorisk variabel, når et hold spiller på hjemmebane. Denne vil symbolisere et gennemsnit af de forskellige klubbers hjemmebanefordel $\alpha$ (forøget sejrs succes når der spilles på hjemmebane). 
-Eksempel a vinder over b, på a's hjemmebane. 
-\begin{equation}
-P(a\ vinder\ over\ b) = \frac{\beta_a}{\beta_a+\beta_b}+\alpha
-\end{equation}
-
-Vi kan også tilføje hjemmebanedelen, som et parameter for hver klub afhængigt af hvor godt de hver især performer på hjemmebane:
-Det er samme princip, blot med t alpha parametre:
-\begin{equation}
-\log(\frac{\Pi_{ab}}{\Pi_{ba}}) = \beta_a-\beta_b + \alpha_a
-\end{equation}
-
-Og tredje alternative model med $a$'s hjemmebaneeffekt som vekselvirkning:
-\begin{equation}
-P(a\ vinder\ over\ b) = \frac{\beta_a\alpha_a}{\beta_a\alpha_a+\beta_b}
-\end{equation}
-Denne parameter beskriver den hjemmebanefordel hold $a$ har. På denne måde kan man altså tilføje flere parametre til modellen, så det ikke længere kun er antal vundne kampe for hold $a \ og \ b$. Vi kan ikke antage en konstant hjemmebanefordel/effekt, da nogle hold kan have en stærkkere hjemmebane, og dermed vil $\alpha$ være forskellig for hvert hold $a$, hvor $\alpha_a>0$.
-\\
-\subsection{Udvidet model med flere udfald}
-Den generelle model kan ifølge Rao and Kupper (1967) udvides til at have tre udfald, ved at tilføje et grænseværdi-parameter $\theta$, der fjerner betingelsen fra 1.1 med $\Pi_{ab}+\Pi_{ba}=1$ (på $a$'s hjemmebane). For nemhedens skyld noterer vi a vinder over b som 1, b vinder over a som 2 og a spiller uafgjort mod b som 3, samt Y som værende parameteren vi vil estimere for:
-
-\begin{align*}
-P(Y=1) &= \frac{\pi_i}{\pi_i+\pi_j\theta}\\
-P(Y=2) &= \frac{\pi_j}{\pi_j+\pi_i\theta}\\
-P(Y=3) &= \frac{\pi_i\pi_j(\theta^2-1)}{(\pi_i+\pi_j\theta)(\pi_i\theta+\pi_j)}
-\end{align*}
-Eftersom sandsynlighederne hver især skal opfylde:
-$P(Y=1)>0, \ P(Y=2)>0\ og \ P(Y=3)>0\ samt P(Y=1)+P(Y=2)+P(Y=3)=1$, er det en nødvendig betingelse at $\theta>1$.
-For at estimere disse sandsynligheder er det oplagt \textcolor{red}{(finde henvisning til at vi bruger en multinomial fordeling)} at bruge en multinomial fordeling, med de tre ovenstående sandsynligheder, med \textcolor{red}{(de stokastiske parametre?)} parametrene $\beta \ og \ \theta$. 
-
-\subsection{Estimering af $\pi$ og $\theta$ }
-Hvis vi definere, $s_{ij}$, $t_{ij}$ samt $u_{ij}$ for hhv. antal sejrer, tab og uafgjort for hold i mod hold j. Så kan vi i det enkelte tilfælde for den k'te kamp mellem hold i og j, opstille likelihooden som: 
-\begin{align*}
-\mathcal{L}_{ijk} &= \Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{s_{ijk}}
-\;\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}^{t_{ijk}}
-\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{u_{ijk}}\\
-&= (\theta^2-1)^{u_{ijk}}\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{SU_{ijk}}\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\big{)}^{SU_{jik}}
-\end{align*}
-Hvor, $S=\sum_{i<j}s_{ij}$,  $T=\sum_{i<j}t_{ij}$ og $U=\sum_{i<j}u_{ij}$ samt $SU_{ij}=\sum_{j(\neq i)}\big{(}s_{ij}+u_{ij}\big{)}$ \\
-\\
-Thi bliver likelihooden for alle observationer:
-\begin{align*}
-L(\pi_1,\pi_2,..,\pi_h;\theta) &=(\theta^2-1)^U\prod_i\pi_i^{SU_i}\prod_{i\neq j}\big{(}\pi_i+\theta\pi_j\big{)}^{-SU_{ij}}
-\end{align*}
-\\\\
-Vi kan nu opstille log-likelihooden og tilføje en lagrange multiplikator for bibetingelsen\\ $\sum_i\pi_i=1$:
-\begin{align*}
-l(\pi_1,\pi_2,..,\pi_h;\theta) 
-&=U\;\log(\theta^2-1)+\sum_i SU_{i}\;\log(\pi_i)-\sum_{i \neq j}SU_{ij}\;\log\big{(}\pi_i+\theta \pi_j\big{)}-\lambda\big{(}\sum_i(\pi_i)-1\big{)}\\
-\end{align*}
-Log-likelihooden kan omskrives, hvor alle led der ikke indeholder $\pi_i$ fjernes, til:
-$$l(\pi_i)=SU_i \; \log(\pi_i) - \sum_{j(\neq i)}SU_{ij}\;\log(\pi_i + \theta \pi_j) - \sum_{j(\neq i)} SU_{ji}\; \log(\pi_j + \theta \pi_i)-\lambda \pi_i$$
-\\
-Vi kan nu opstille førsteordens betingelserne: 
-\begin{equations}
-\begin{align}
- \frac{\partial \ell(\pi;\theta)}{\partial \pi_i}&= 
-\frac{SU_i}{\hat{\pi_i}}-\sum_{j(\neq i)}\frac{SU_{ij}}{\hat{\pi_i}+\theta \pi_j}-\sum_{j(\neq i)}\frac{\theta SU_{ji}}{\pi_j + \theta \hat{\pi_i}}-\lambda=0\\
-\frac{\partial \ell(\pi;\theta)}{\partial \theta}&=
-\frac{2U\hat{\theta}}{\hat{\theta}^2-1}-\sum_{i \neq j}\frac{SU_{ij}\pi_j}{\pi+\hat{\theta}\pi_j}=0\\
-\frac{\partial \ell(\pi;\theta)}{\partial \lambda}&=
-\sum_i(\pi_i)=1
+\hat{\sigma}_{\beta_1}& &\\
+& \ddots & \\
+& & \hat{\sigma}_{\beta_k} \\
+& & & \hat{\sigma}_{\theta}
+\end{bmatrix}
 \end{align}
-\end{equations}
-\textcolor{red}{
-\begin{equation}
-\frac{\partial \ell(\pi;\theta)}{\partial \pi_i}= 
-\frac{SU_i}{\hat{\pi_i}}-\sum_{j(\neq i)}\frac{SU_{ij}}{\hat{\pi_i}+\theta \pi_j}-\sum_{j(\neq i)}\frac{\theta SU_{ji}}{\pi_j + \theta \hat{\pi_i}}-\lambda=0
-\end{equation}
-\begin{equation}
-\frac{\partial \ell(\pi;\theta)}{\partial \theta}=
-\frac{2U\hat{\theta}}{\hat{\theta}^2-1}-\sum_{i \neq j}\frac{SU_{ij}\pi_j}{\pi+\hat{\theta}\pi_j}=0
-\end{equation}
-\begin{equation}
-\frac{\partial \ell(\pi;\theta)}{\partial \lambda}=\sum_i(\pi_i)=1
-\end{equation}
-}
-Netwon-Raphson:
-Initialiserer med\\ $x_{k} = x_0$\\
-Opdaterer med:\\
-$x_{k+1}=x_{k}-f'(x_{k})/f''(x_{k})$\\
-Termination:\\
-$|f(x_{k})|< tolerance$ med n-antal decimaler.
-I n-dimensioner:\\
-$
-w_{k} = \left(
-\begin{array}{c}
-\pi_i\\
-\theta
-\end{array}
-\right) 
-$
-$
-\Delta=\left(
-\begin{array}{c}
- \frac{\text{dl}}{\text{d$\pi $}_i} \\
- \frac{\text{dl}}{\text{d$\theta $}} \\
-\end{array}
-\right)
-$
-\\
-$
-H=\left(
-\begin{array}{cc}
- \frac{\text{dl}}{d \pi _i \pi _i} & \frac{\text{dl}}{d   \pi _i \theta} \\
- \frac{\text{dl}}{d \theta  \pi _i} & \frac{\text{dl}}{d \theta \theta } \\
-\end{array}
-\right)
-$
-\\
-$
-w_{k+t}=w_k-H^{-1}\Delta
-$
-%################################################################
-\section{Least Absolute Shrinkage and Selection Operator}
-
-\section{Gammelt Lort}
+Modellen kan i sin helhed testes ved en $\chi^2$ Goodness of Fit test, hvor vi kan teste de kumulerede sandsynligheder op imod de observerede sandsynligheder fra kontingenstabellen. Vi kan opstille en kontingenstabel for de forventede udfald ud $\hat{Y}_{ij} = (\hat{Y}_{i\cdot ij},\hat{Y}_{j\cdot ij},\hat{Y}_{0\cdot ij})$, som er udregnet ved brug af de estimerede $\hat{\beta}$ og $\hat{\theta}$:
+%For at tjekke modellen igennem er det praktisk udregne residualerne:
 \begin{align*}
-    &=\sum_{i<j}\big{[}a(Y)^T\;b(\beta,\theta)+c(\beta,\theta)\big{]}\\
-    \beta&=\begin{bmatrix}\beta_1\\ \beta_2\end{bmatrix}=\begin{bmatrix}\log\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}\\\log\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)} \end{bmatrix},\;\;
-    a(Y)=\begin{bmatrix}Y_{i\cdot ij}\\Y_{j\cdot ij}\end{bmatrix}\;\; \\
-    b(\beta,\theta)&=\begin{bmatrix}\beta_1-\log(1-e^{\beta_1}-e^{\beta_2})\\\beta_2-\log(1-e^{\beta_1}-e^{\beta_2})\end{bmatrix},\;\;
-     c(\beta,\theta)=\log(1-e^{\beta_1}-e^{\beta_2})
+&\textbf{Rå (respons) residualer}\\
+&\epsilon_{i\cdot ij}=Y_{i\cdot ij}-r_{ij}p_{i\cdot ij}
+&&\epsilon_{j\cdot ij}=Y_{i\cdot ij}-r_{ij} p_{j\cdot ij}
+&&\epsilon_{0\cdot ij}=Y_{0\cdot ij}-r_{ij} p_{0\cdot ij}\\
+&\epsilon_{i\cdot ij}=Y_{i\cdot ij}-r_{ij} \frac{\pi_i}{\pi_i+\theta \pi_j}
+&&\epsilon_{j\cdot ij}=Y_{i\cdot ij}-r_{ij} \frac{\pi_j}{\theta \pi_i+ \pi_j}
+&&\epsilon_{0\cdot ij}=Y_{0\cdot ij}-r_{ij} \frac{(\theta^2-1)\pi_i\pi_j}{(\pi_i+\theta \pi_j)(\theta
+\pi_i + \pi_j)}\\
 \end{align*}
-$$
-g(\beta)=-c'(\beta,\theta)^{-1}=\begin{bmatrix}\frac{1-e^{\beta_1}-e^{\beta_2}}{e^{\beta_1}}\\ \frac{1-e^{\beta_2}-e^{\beta_1}}{e^{\beta_2}}\end{bmatrix}
-=
-\begin{bmatrix}
-\frac{\pi_i \theta + \pi_j}{\pi_j(\theta^2-1)}\\
-\frac{\pi_i+\pi_j \theta}{\pi_i(\theta^2-1)}
-\end{bmatrix}=\begin{bmatrix}1-\pi_{i\cdot ij}-\pi_{j\cdot ij}\\\pi_{i\cdot ij}\end{bmatrix}
-$$
-Vi undgår overparameterisering ved at sætte styrkeparameteret for hold h til 0. ($\log(\pi_r)=0$). 
-Vi kan estimere vores parametre ved brug af Newton Rhapson algoritmen:
-\begin{align}
-\beta^{k+1}=\beta^k+i(\beta,\theta)^{-1} \; s(\beta,\theta)
-\end{align}
-\begin{align}
-s_y(\beta,\theta)&=\begin{bmatrix}\sum_{i<j}Y_{i\cdot ij}-\frac{(1-Y_{i\cdot ij}-Y_{j\cdot ij})e^{\beta_1}}{1-e^{\beta_1}-e^{\beta_2}}\\\sum_{i<j}Y_{i\cdot ij}-\frac{(1-Y_{i\cdot ij}-Y_{j\cdot ij})e^{\beta_2}}{1-e^{\beta_1}-e^{\beta_2}}
-\end{bmatrix}\\
-i(\beta,\theta)
-&=\begin{bmatrix}\sum_{i<j}\frac{(1-e^{\beta_2})e^{\beta_1}(1-Y_{i\cdot ij}-Y_{j\cdot ij})}{(1-e^{\beta_1}-e^{\beta_2})^2}
-&\sum_{i<j}\frac{(1-Y_{i\cdot ij}-Y_{j\cdot ij})}{(1-e^{\beta_1}-e^{\beta_2})^2}e^{\beta_1+\beta_2}
-\\
-\sum_{i<j}\frac{(1-Y_{i\cdot ij}-Y_{j\cdot ij})}{(1-e^{\beta_1}-e^{\beta_2})^2}e^{\beta_1+\beta_2}
-&\sum_{i<j}\frac{(1-e^{\beta_1})e^{\beta_2}(1-Y_{i\cdot ij}-Y_{j\cdot ij})}{(1-e^{\beta_1}-e^{\beta_2})^2}\end{bmatrix}
-\end{align}
-For at kunne estimere parametrene nummerisk beskriver vi $\beta_1 \; og \; \beta_2$ ved hhv. $x_i^T\beta$ og $x_{j}^T\beta$ hvor $x_i$ er den del af designmatricen hvor hold \textit{i} indgår og $x_{j}$ er den del af designmatricen hvor hold $j$ indgår, og $\beta$ er den tilhørende parametervektor. 
-\newpage
-\textbf{BEMÆRK Ved score og information, har jeg differentieret mht. B1 og B2, (IKKE MHT PI(I) OG PI(J)) Jeg har også løst hvor der i loglikelihooden indsættes $\beta_1=X_i^T\beta_i$ (ja mega forvirrende med $\beta_1\neq \beta_i$) som i de er ikke det samme.Beregningerne kan findes på billedet på næste side.
-Yderligere, så skal vi lige argumentere for, at informationen (hessematricen) er invertibel. (tror det er noget med positivt semi definit og det er den muligvis )?}
-\begin{center}
-    \includegraphics[scale=0.1]{ifmbt.jpg}
-\end{center}
+\begin{align*}
+&\hat{Y}_{i\cdot ij} = r_{ij}\frac{e^{x_i^T\beta}}{e^{x_i^T\beta}+\theta e^{x_j^T\beta}},
+&&\hat{Y}_{j\cdot ij} = r_{ij}\frac{e^{x_j^T\beta}}{e^{x_j^T\beta}+\theta e^{x_i^T\beta}},
+&&\hat{Y}_{0\cdot ij} = r_{ij}\frac{(\theta^2-1)e^{x_i^T\beta}e^{x_j^T\beta}}{(e^{x_i^T\beta}+\theta e^{x_j^T\beta})(e^{x_i^T\beta}\theta +e^{x_j^T\beta})}.
+\end{align*}
+Vores $\chi^2$ teststørrelse bliver:
+\begin{align*}
+\chi^2 = \sum_{i<j} \frac{(Y_{i\cdot ij}-\hat{Y}_{i\cdot ij})^2}{\hat{Y}_{i\cdot ij}} + \frac{(Y_{j\cdot ij}-\hat{Y}_{j\cdot ij})^2}{\hat{Y}_{j\cdot ij}} + \frac{(Y_{0\cdot ij}-\hat{Y}_{0\cdot ij})^2}{\hat{Y}_{0\cdot ij}}
+\end{align*}
+Her vil det også gælde for tilstrækkeligt store stikprøver at teststørrelsen er $\chi^2$ fordelt, og her med $(h^2-2h)$ frihedsgrader. \\
+Ovenstående tests skal evalueres med en vis forsigtighed, eftersom antagelsen om at den underliggende fordeling er logistisk, ikke altid vil være opfyldt. Derfor er det vigtigt at kigge på dem som en helhed, og ydermere ved brug af et PP-plot, hvor vi kigger på den teoretiske fordeling op imod vores estimerede udfald. 
 
-\begin{equation}
-log(\frac{\Pi_{ab}}{\Pi_{ba}}) = \beta_a-\beta_b
-\end{equation}
+\section{Tests af den udvidede Bradley-Terry model}
+I denne del, vil vi teste modellen på historisk data fra den danske 3F Superliga. Der er i alt 14 hold i ligaen for hver sæson, hvor der i slutningen af sæsonen rykker ét hold op fra 1. Divison og ét hold rykker ned. Derfor vil data for to sæsoner give 16 forskellige hold.  
+Tests:
+Log-likelihood ratio
+Plot af kumulerende observationer op mod kumulerende sandsynligheder
+Derefter
+Konfidensinterval på parametrene
+\clearpage
+\section{LASSO Regression}
 
-Hvis vi definere, $s_{ij}$, $t_{ij}$ samt $u_{ij}$ for hhv. sejrer, tab og uafgjort for hold i. Så kan vi i det enkelte tilfælde for den k'te kamp mellem hold i og j, opstille Likelihooden som: 
-
-$$
-\mathcal{L}_{ijk}=\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{s_{ijk}}
-\;\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}^{t_{ijk}}
-\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{u_{ijk}}
-\;
-$$
-Thi bliver likilihooden for de samlede observationer mellem de h antal hold:
-$$
-\mathcal{L}(\pi_1,\pi_2,..,\pi_h;\theta)=\binom{n}{S\;T\;U}\prod_{i=1}\prod_{j=1}\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{s_{ij}}
-\;\textcolor{red}{\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}^{t_{ij}}}
-\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{\frac{1}{2}u_{ij}}
-$$
-Likelihood funktionen kan opskrives som nedenstående, hvor $s_{ij}$ viser antal vundne kampe for $i$ mod $j$ og $u_{ij}$ er antal uafgjorte for $i$ mod $j$. Eftersom vi itererer over både $i$ og $j$ vil de uafgjorte kampe blive fordoblet, hvorfor der ganges med en halv i potensen. 
-$$
-\mathcal{L}(\pi_1,\pi_2,..,\pi_h;\theta)=\binom{n}{S\;T\;U}\prod_{i=1}\prod_{j=1}\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{s_{ij}}
-\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{\frac{1}{2}u_{ij}}
-\;
-$$
-Hvor r, er antal kampe mellem hold i og j samt $S=\sum_{i<j}s_{ij}$,  $T=\sum_{i<j}t_{ij}$ og $U=\sum_{i<j}u_{ij}$
-\\
-\textcolor{red}{Er usikker på, om vi blot skal finde MLE for $\pi_i$ eller begge? vi har vel kun hold i mod j og ikke hold j mod i?}
-\\
-$$
-\ell(\pi_1,\pi_2,..,\pi_h;\theta)=\sum_{i=1}\sum_{j=1}\Big{[}s_{ij}\;Log\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}+
-\frac{1}{2}u_{ij}\;Log\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}\Big{]}
-\;
-$$
-
-Ved at opstille første ordens betingelserne $\frac{\partial \ell(\pi;\theta)}{\partial \pi_i}=0$, 
-\textcolor{red}{Da $\pi_i$ antager alle hold, burde det ikke være nødvendigt med denne
-$\frac{\partial \ell(\pi;\theta)}{\partial \pi_j}=0$} samt $\frac{\partial \ell(\pi;\theta)}{\partial \theta}=0$ kan vi nu løse ligningsystemerne og finde vores maksimum likelihood estimater $\hat{\pi_i}$ og $\hat{\theta}$ for hhv. $\pi_i(i=1,2,...,h)$ og $\theta$. 
-
-\begin{equation}
-\frac{\partial \ell(\pi;\theta)}{\partial \pi_i}=\sum_i\sum_j \frac{s_{ij}+\frac{1}{2}u_{ij}}{\pi_i}-\frac{s_{ij}+\frac{1}{2}u_{ij}}{\pi_i+\theta\pi_j}-\frac{\theta\frac{1}{2}u_{ij}}{\pi_j+\theta\pi_i}=0
-\end{equation}
-
-\begin{equation}
-\frac{\partial \ell(\pi;\theta)}{\partial \theta}=\sum_i\sum_j
-\frac{\theta u_{ij}}{\theta^2-1}
-- \frac{\pi_j(s_{ij}+\frac{1}{2}u_{ij})}{\pi_i+\theta \pi_j}
-- \frac{\frac{1}{2}u_{ij}\pi_i}{\pi_j+\theta \pi_i}=0
-\end{equation}
-
-\newpage
-SAMTALE: \\
-Og anden ordens betingelserne: hmmm, tænker dpidpj at alle led uden de to går ud, så vi faktisk ingen summer har? Er det ikke kun første sum i (4) der går ud, når vi differentierre ift. .j, er det så også ift. én pj?
-
-summerne ikke det inde i dem
-selve "sum tegnene". vi skal vel ikke summere over noget længere, eller hvad, hmm fuck altså eller vnete lidt..... nej jeg tror sumtegnene forsvinder, det virker bare lidt fucked, men tror du har ret e9 (wow), vi gør det jo ift et specifikt hold så i teorien giver det rigtig god mening... at "corvariatet mellem to hold kun afhænger af de to hold.?", Men det hold vi estimerer for skal vel ikke kun laves ud fra ét andet hold? nej det bliver ift. alle de andre
-
-vi har jo en h x h kovarians matrix yes, lad os prøve (y) vi kan altid prøvve fucking mange metoder, og så bare estimere med nogle dummy værdier? og se hvilken likelihood der er størst? :P
-Hvis du kan så tjek lige dtheta2 efter, hvis jeg har lavet rigtigt går det meget nice ud, aight. Vent lige, hvorfor differentierer vi ift. pj? er det ikke kun ift. pi og theta? Hvis vi skal lave en kovarians matrix (hessematrice/information) skal vi have kovariansen mellem hold i og hold j... som er identistisk for alle hold.... Ved ikke om det i teorien er nødvendit at vedlægge, det er vel bare at vise at vi kan differentiere.... Men vi skal bruge det når vi skal lave algoritmen tror jeg. Men har vores gradient ikke kun to differentialer (hvis vi ikke regner lambda med)? Gradienten er h lang. aight,,, Vi differentiere ift hvert hold-1 og theta. Som feodor sagde: "Vi har mange parametre". Ja...
-Vi er helt enige Lucas, det var det jeg henviste til før (y) (y) hmmmmm. Jeg får det til at at der er forskel på om man differentiere ift. theta eller pi først........................ ja, giver vel også mening gør det? er ret sikker på den bør være symmetrisk.. hmm kan sagtens være jeg tager fejl, tror jeg tager fejl AHHHHHHHHHHHHHHHHHHHHHHHHH.... Jeg havde regnet dLdtheta forkert i (5) eller skrevet forkert ind............ det stemmer der er ens perfekt... Jeg smutter i seng tror jeg.. Ellers mangler vi vel bare at lave de rettelser som feodor anbefalede? Tænker jeg, og prøve den der Newton rhapson af på den ene eller anden måde. Lad os tales ved imorgen formiddag eller w/e du vågner, jeg er tidligt oppe og arbejder lidt? Helt sikkert. Cool nn nn.
-\newpage
-
+\printbibliography %Printer referencer
 
 \end{document}
