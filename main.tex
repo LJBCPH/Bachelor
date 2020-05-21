@@ -845,10 +845,10 @@ Indtil videre har vi anvendt alle vores forklarende variable, til at beskrive de
 hvor bibetingelsen straffer i forhold til de normerede $\beta$-koefficienterne. $s$, som beskriver den størst mulige sum af $\beta$-koefficienterne, er en brugervalgt strafparameter. 
 Vi omskriver lasso-problemet på \textit{Lagrange-form}, da vi senere hen benytter dets praktiske \textcolor{blue}{anvendelighed /implementerbarhed.}:
 \begin{align*}
-\max_{\beta,\,\theta} \Big{\{}\ell(\beta,\theta)-\lambda\sum_{i=1}^k|\beta_i|\Big{\}}=\min_{\beta,\,\theta} \Big{\{}-\ell(\beta,\theta)+\lambda\sum_{i=1}^k|\beta_i|\Big{\}},
+\max_{\beta,\,\theta} \Big{\{}\ell(\beta,\theta)-\lambda\sum_{i=1}^k|\beta_i|\Big{\}}=\min_{\beta,\,\theta} \Big{\{}-\ell(\beta,\theta)+\lambda\sum_{i=1}^k|\beta_i|\Big{\}},\text{ hvor }\beta
 \end{align*}
 hvor $\lambda\geq0$ er en strafparameter tilsvarende $s$, og beskriver hvor objektfunktionen skal straffes i forhold de normerede $\beta$-koefficienter. $\lambda$ og $s$ har et inverst forhold, så når $\lambda$ er høj, er $s$ lav. Hvis $s\geq\sum_i^k\|\beta_i|\iff \lambda=0$ vil lasso løsningen være lig maksimum likelihood løsningen, men hvis $s=\frac{1}{\delta}\sum_i^k\|\beta_i|$ vil koefficienterne gennemsnitligt mindskes til $\frac{1}{\delta}$ af hvad de var før. \textcolor{red}{Sammenhængen mellem $\lambda$ og $s$ er bevist i bevist for en konvex lineær model med ortogonal designmatrice i bevis (REF)}
-\subsubsection{Parameterestimering med lassostraf}
+\subsection{Lasso parameterestimering}
 \textcolor{blue}{For at forklare effekten af lasso på parametrene, vil vi tage udgangspunkt i en lineær model med ortogonal designmatrice, fordi vi i det tilfælde kan skrive resultatet ned eksplicit. Når X er ortogonal er $X^T=X^{-1}$, så mindste kvadraters løsningen bliver:}
 \begin{align*}
 \hat{\beta}=\big{(}X^TX\big{)}^{-1}X^Ty=X^Ty.
@@ -861,27 +861,37 @@ Lasso-problemet for en lineær model bliver:
 \intertext{Objektfunktion er nu en sum af k identiske problemer, som vi løser hver for sig. Vi tager udgangspunkt i det i'te problem, og får objektfunktionen:}
 &f(\beta_i)=-2\hat{\beta}_i\beta_i+\beta_i^2+\lambda|\beta|.\\
 \intertext{Thi vi ønsker at minimere objektfunktionen må det gælde, at $\hat{\beta}_i>0\rightarrow\beta_i\geq0$, for ellers ville objektfunktionen kunne mindskes ved at skifte fortegnet for $\beta_i$, og ligeledes må det gælde, at $\hat{\beta}_i<0\rightarrow\beta_i\leq0$ Ved at differentier og sætte lig 0 fås den afledte:}
-&f'(\beta_i)=-2\cdot\text{sign}\big{(}\hat{\beta_i}\big{)}\hat{\beta_i}+2\beta_i+\lambda. \\
+&f'(\beta_i)=-2\sgn\big{(}\hat{\beta_i}\big{)}\hat{\beta_i}+2\beta_i+\lambda. \\
 \intertext{Ved at isolere $\beta_i$ og gange begge sider med fortegnet for $\beta_i$ (fortegnet for $\hat{\beta_i}$), for at sikre positivt fortegn på venstre siden, fås:}
-&\beta_i=\text{sign}\big{(}\hat{\beta_i}\big{)}\Big{(}\text{sign}\big{(}\hat{\beta_i}\big{)}\hat{\beta_i}-\frac{1}{2}\lambda\Big{)}=\text{sign}\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)},\\
-\intertext{hvis $\hat{\beta}_i<0$ kræves, at $\text{sign}\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}\leq0$ og ligeledes kræver $\hat{\beta}_i>0$, at $\text{sign}\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}\geq0$, hvilket løses ved at sætte $\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}$ lig nul, hvis ledet er negativt:}
-&\hat{\beta}_i^{\text{lasso}}=\text{sign}\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}^{+},\\
+&\beta_i=\sgn\big{(}\hat{\beta_i}\big{)}\Big{(}\sgn\big{(}\hat{\beta_i}\big{)}\hat{\beta_i}-\frac{1}{2}\lambda\Big{)}=\sgn\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)},\\
+\intertext{hvis $\hat{\beta}_i<0$ kræves, at $\sgn\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}\leq0$ og ligeledes kræver $\hat{\beta}_i>0$, at $\sgn\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}\geq0$, hvilket løses ved at sætte $\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}$ lig nul, hvis ledet er negativt:}
+&\hat{\beta}_i^{\text{lasso}}=\sgn\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)}^{+},\\
+\end{align*}
+\begin{align}
 \intertext{så}
-&\hat{\beta}^{\text{lasso}}=\sgn\big{(}\hat{\beta}\big{)}\big{(}|\hat{\beta}|-\frac{1}{2}\lambda\big{)}^{+}
-\end{align*}
-Vi ser tydeligt, at når $\lambda$ stiger, går $\hat{\beta}_i^{\text{lasso}}$ mod 0, samt at $\lambda\geq2|\hat{\beta}_i|\rightarrow \hat{\beta}_i^{\text{lasso}}=0$. Det vil sige, at i forbindelse med at $\lambda$ stiger vil lasso-estimaterne gå mod 0, samt at når $\lambda$ bliver tilpas stor vil en eller flere koefficienter sættes lig 0, hvilket betyder at lasso løbende træffer et valg af underum. Idéen er nu, at når $|\beta|$-koefficienterne mindskes, mindskes variansen af de estimerede sandsynligheder, hvilket medfører at modellens prædiktionsfejl mindskes. Dette sker dog på bekostning af, at når $|\beta|$-koefficienterne mindskes, medfører det også at den kvadrerede bias stiger, hvilket øger modellens forventede fejl. Variansen falder, da sandsynlighederne bliver mindre påvirket af deres kovariater. Den kvadrerede bias stiger, da lasso trækker estimaterne mod 0 og væk fra de centrale løsninger. Ved justering af $\lambda$ bliver modellens forventede prædiktionsfejl altså trukket i hver sin retning på grund af ændringer i bias og varians. Dette forhold mellem bias og varians kaldes \textit{The Bias-Variance Decomposition}\cite{ESL}. Humlen er så, at finde den $\lambda$ der minimerer de forventede prædiktionsfejl.
-\subsection{LAMBDA OG S}
-Med udgangspunkt i en lineær model som tidligere: Lad $f:\Reals^k\rightarrow R$ være en konveks funktion, så vil for et hvilket som helst par af vektorer $(\beta, \hat{\beta})$ i $f$'s mængde og for en $b\in [0,1]$ gælde, at
+ &\hat{\beta}^{\text{lasso}}=\sgn\big{(}\hat{\beta}\big{)}\big{(}|\hat{\beta}|-\frac{1}{2}\lambda\big{)}^{+}\label{lig:LassoLøsning}
+\end{align}
+Vi ser tydeligt, at når $\lambda$ stiger, går $\hat{\beta}_i^{\text{lasso}}$ mod 0, samt at $\lambda\geq2|\hat{\beta}_i|\rightarrow \hat{\beta}_i^{\text{lasso}}=0$. Det vil sige, at i forbindelse med at $\lambda$ stiger vil lasso-estimaterne gå mod 0, samt at når $\lambda$ bliver tilpas stor vil en eller flere koefficienter sættes lig 0, hvilket betyder at lasso løbende træffer et valg af underum. Idéen er nu, at når $|\beta|$-koefficienterne mindskes, mindskes variansen af de estimerede sandsynligheder, hvilket medfører at modellens prædiktionsfejl mindskes. Dette sker dog på bekostning af, at når $|\beta|$-koefficienterne mindskes, medfører det også at den kvadrerede bias stiger, hvilket øger modellens forventede fejl. Variansen falder, da sandsynlighederne bliver mindre påvirket af deres kovariater. Den kvadrerede bias stiger, da lasso trækker estimaterne mod 0 og væk fra de centrale løsninger. Ved justering af $\lambda$ bliver modellens forventede prædiktionsfejl altså trukket i hver sin retning på grund af ændringer i bias og varians. Dette forhold mellem bias og varians kaldes \textit{The Bias-Variance Decomposition}\cite{ESL}. Humlen er så, at finde den $\lambda$ der minimerer de forventede prædiktionsfejl.\par
+Med udgangspunkt i en lineær model som tidligere: Lad $f:\rm I\!R^k \rightarrow \rm I\!R$ være en konveks tabsfunktion, så vil for et hvilket som helst vektor-par $(\beta, \hat{\beta})$ i $f$'s mængde og for en $b\in [0,1]$ gælde, at
 \begin{align*}
-    f(b\beta+(1-b)\hat{\beta})\leq bf(\beta)+(1-b)f(\hat{\beta}),
-\intertext{hvilket betyder, at en linje mellem to $f(\beta)$ og $f(\beta')$ altid vil ligge på eller over grafen for f. Det medfører, at hvis en konveks funktion har et lokalt minimumspunkt er det også et globalt minimumspunkt. $\hat{\beta}$ er globalt minimumspunkt, hvis}
-    bf(\beta)+(1-b)f(\hat{\beta})\leq bf(\beta)+(1-b)f(\beta),
-\intertext{bf(\beta)+(1-b)f(\hat{\beta}) er}
+    f(b\beta+(1-b)\hat{\beta})&\leq bf(\beta)+(1-b)f(\hat{\beta}),
+\intertext{hvilket betyder, at en linje mellem to $f(\beta)$ og $f(\hat{\beta})$ altid vil ligge på eller over grafen for f. Det medfører, at hvis en konveks funktion har et lokalt minimumspunkt er det også et globalt minimumspunkt. $\hat{\beta}$ er globalt minimumspunkt, hvis}
+    bf(\beta)+(1-b)f(\hat{\beta})&\leq bf(\beta)+(1-b)f(\beta)=f(\beta), 
+\intertext{for alle $\beta$ i $f$'s mængde. Det betyder, at $bf(\beta)+(1-b)f(\hat{\beta})$ er bedre end $f(\beta)$ medmindre $f(\beta)=f(\hat{\beta})$ eller $b=1 \iff f(\beta)=f(\beta)$. Lad nu bibetingelsen $|\beta| \leq s$ være aktiv, så $s\leq|\hat{\beta}|$ og lad $|\Tilde{\beta}|<s$. Så vil det gælde, at}
+&|\Tilde{\beta}|\leq b|\Tilde{\beta}|+(1-b)|\hat{\beta}|, 
+\intertext{hvor}
+&b|\Tilde{\beta}|+(1-b)|\hat{\beta}|\leq s
+\intertext{hvis blot b er lille nok. Dermed findes der et bedre punkt end $\Tilde{\beta}$ med 1-norm mindre end $s$. Dermed kan $\Tilde{\beta}$ ikke være minimumspunkt for $f$ u.b.b $\beta\leq s$. Derfor må minimumspunktet $\hat{\beta}$ for konvex funktion $f$ u.b.b $|\beta|\leq s$ have 1-norm lig $s$. Figur (\ref{fig:LAMBDABETA}) viser et eksempel på minimaliserings problemet af en konvekse funktion $f=\beta^2-5\beta$, u.b.b $|\beta|\leq s=1$, hvor $\beta \in \rm I\!R$. Med udgangspunkt i $\hat{\beta}^{\text{lasso}}$-løsningen fra ligning (\ref{lig:LassoLøsning}), kan vi nu se, hvordan $s$ afhænger af $\lambda$ når $0 < s < \sum_i^k\hat{\beta}_i$ (s er aktiv og større end nul):}
+s&=\sum_i^k\Big{(}|\hat{\beta}_i^{\text{lasso}}|\big{)}=\sum_i^k\big{(}|\hat{\beta}_i|-\frac{1}{2}\lambda\big{)}^{+}
+\intertext{hvorfra vi tydeligt ser, at der er en én til én korrespondance mellem $s$ og $\lambda$, hvor s er lav når $\lambda$ er høj, samt $s\geq \hat{\beta}\iff \lambda=0$, hvor \hat{\beta}^{\text{lasso}}=\hat{\beta}}\\
+&s=\sum_{j:|\hat{\beta}|>\lambda/2} (|\hat{\beta}_j|-\lambda/2)
 \end{align*}
-
-\textit{least squares} tabsfunktionmed minimumspunkt $\hat{\beta}$. Lad $|\Tilde{\beta}|<s$. for $b\in [0,1]$ 
-
-
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=\textwidth]{LAMBDABETA.png}
+\caption{\textit{Illustration af løsningen til minimaliseringsproblemet af tabsfunktionen $f=\beta^2-5\beta$ under bibetingelsen $|\beta|<1$}}
+  \label{fig:LAMBDABETA}
+\end{figure}
 \subsection{$\lambda$ og s forhold}
 I løsningen til lasso problemet gælder bibetingelsen:
 \begin{align*}
@@ -950,7 +960,7 @@ Algoritmen til at estimere parametrene med lasso-straf, kan læses som pseudokod
     \textbf{return}($v_c$)\;
    }
 \For{($k = 1,...,length(\beta)$)}{
-    \If{($(abs(\beta[k]_{c+1}) < 10^{-6})$ \|\; $(\text{sign}(\beta[k]_{c})\neq \text{sign}(\beta[k]_{c+1})$ \& $\text{abs}(\beta[k]_{c+1})<10^{-5})$)}{$\beta[k] = 0$\;}
+    \If{($(abs(\beta[k]_{c+1}) < 10^{-6})$ \|\; $(\sgn(\beta[k]_{c})\neq \sgn(\beta[k]_{c+1})$ \& $\text{abs}(\beta[k]_{c+1})<10^{-5})$)}{$\beta[k] = 0$\;}
     }
  }
 \caption{Newton-Raphson for Dynamisk Model med lasso-straf}
@@ -985,12 +995,13 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
     \caption{$\hat{\beta}^{\text{lasso}}$-koefficienter for forskellige straf-størrelser i den Dynamiske Rao Kupper Model med lasso-straf}
     \label{fig:DBetaLasso}
   \end{subfigure}
+  \hspace{0.2cm}
   \begin{subfigure}[b]{0.425\linewidth}
     \includegraphics[width=\textwidth]{SKL2.png}
     \caption{$\hat{\beta}^{\text{lasso}}$-koefficienter for forskellige straf-størrelser i Rao Kupper Modellen med lasso-straf}
     \label{fig:StatiskLine}
   \end{subfigure}
-\caption{\textit{Estimerede koefficienter mod $\lambda$-værdier for Den Generelle Rao Kupper Model og Den Dynamiske Rao Kupper Model}}
+\caption{\textit{Estimerede koefficienter mod $\lambda$-værdier for Rao Kupper modellen og Den Dynamiske model}}
   \label{fig:KoefficienterLambda}
 \end{figure}
 \\Eftersom målet er at minimere vores prædiktionsfejl, skal vi udvælge den $\lambda$, der minimerer dem, hvilket vi som tidligere beskrevet gør brug af krydsvalidering. Vi har valgt at dele datasættet op i 6 lige store dele, hvor vi prædikterer 5 runder ad gangen. Inddelingerne af runderne er som følgende; $\{4,8\},\{9,13\},\{14,18\},\{19,23\},\{24,28\},\{29,33\}$. Detter er gjort for begge modeller for at kunne sammenligne deres prædiktionsfejl. For hvert interval estimerer vi $\hat{\beta}$ med lasso-straffen $\lambda \in \{0,1,...,30\}$ for den Dynamiske Rao Kupper Model og $\lambda \in \{0,...,6\}$ for den Generelle Rao Kupper Model. For hver opdeling fitter vi modellerne og udregner MSPE og Log-Loss for hver af de udeladte runder. Hver gang vi fjerner en parameter vil denne parameter forblive fjernet, og dermed ikke testet for de resterende $\lambda$'er. Figurene \ref{fig:DynLogLossLine},  \ref{fig:DynMSPELine}, \ref{fig:LogLossStat} og \ref{fig:MSPEStat} viser prædiktionsfejlene, hvor hver linje på graferne repræsenterer prædiktionsfejlene i forhold til $\lambda$ tilhørende én kamp, hver linje er altså bestående af  prædiktionsfejl. \sout{De markante hak i alle graferne, skyldes vores selektering hvor der er fjernet en til flere parametre ved hvert af hakkene.} Vi ser på Figur (\ref{fig:DynMSPELine}) og (\ref{fig:DynLogLossLine}) at variansen i prædiktionsfejlene klart er faldende når $\lambda$ stiger, hvilket også var forventeligt jvf. Bias-Variance tradeoff'et, derudover er det også en naturlig følge da $\hat{\beta} \rightarrow 0 \Rightarrow \pi_i \approx \pi_j \Rightarrow \hat{p}_{i\cdot ij} \approx \hat{p}_{j \cdot ij}$. Det ses på figurene at nogle af linjerne ser ud til ikke at blive påvirket af $\lambda$, og det viser sig også at det er de uafgjorte kampe. På trods af at vores estimerede $\beta$ koefficienter går mod $0$, og vores styrker dermed bliver tættere på hinanden, forbliver de estimerede sandsynligheder for uafgjort ikke ændret markant. Vi ser faktisk at fejlene til de uafgjorte kampe stiger en smule, hvilket må forventes når $\beta$-koefficienterne falder, eftersom $\p_{0 \cdot ij}$ for et fast $\theta$ er maksimeret når $\hat{p}_{i\cdot ij} = \hat{p}_{j \cdot ij}$. Udviklingen af prædiktionsfejlene for Rao Kupper modellen i Figur \ref{fig:MSPEStat} og \ref{fig:LogLossStat} ændrer sig stort set ikke når $\lambda$ stiger, hvilket følger den udvikling vi så i Figur \ref{fig:StatiskLine}. Det tyder altså på at lasso-straffen, ikke har en lige så stor betydning for Rao Kupper modellen, som den har i den Dynamiske model. Dette underbygges yderligere når vi kigger på Figurene \ref{fig:MSPEBarDyn}, \ref{fig:LogLossBarDyn}, \ref{fig:MSPEBarStat} og \ref{fig:LogLossBarStat} hvor vi kan se at de gennemsnitlige prædiktionsfejl i den Dynamiske Model ses at være minimeret for $\lambda = 3$ hvorefter de stiger, og i Rao Kupper modellen stort set ikke ændres, men er minimeret for $\lambda = 0.94$. Det ses yderligere at for $\lambda = 0$ har Rao Kupper modellen lavere prædiktionsfejl end den Dynamiske model, hvorfor lasso-straffen klart forbedrer den Dynamiske model mere end den forbedrer Rao Kupper modellen, dette forhold ses også i Table \ref{tab:KVMSPELOGLOSS}. \\
@@ -998,7 +1009,7 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
   \centering
   \begin{subfigure}[b]{0.425\linewidth}
     \includegraphics[width=\textwidth]{MSPELINEALPHA.png}
-    \caption{Kvadreret prædiktionsfejl mod $\lambda$ for den dynamiske model med lasso-straf, hvor hver linje viser fejlene tilhørende én kamp, og den sorte linje viser gennemsnittet af fejlene, altså MSPE}
+    \caption{Kvadreret prædiktionsfejl mod $\lambda$ for den Dynamiske model med lasso-straf, hvor hver linje viser fejlene tilhørende én kamp, og den sorte linje viser gennemsnittet af fejlene, altså MSPE}
     \label{fig:DynMSPELine}
   \end{subfigure}
      \hspace{0.2cm}
@@ -1009,16 +1020,16 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
     \end{subfigure}
   \begin{subfigure}[b]{0.425\linewidth}
     \includegraphics[width=\textwidth]{BARMSPENYALPHA.png}
-    \caption{Zoomet ind på den sorte linje i ovenstående figur, viser altså MSPE for hver $\lambda$. Hver ende på barene er en standardfejl fra MSPE'en for den dynamiske model med lasso-straf}
+    \caption{Zoomet ind på den sorte linje i ovenstående figur, viser altså MSPE for hver $\lambda$. Hver ende på barene er en standardfejl fra MSPE'en for den Dynamiske model med lasso-straf}
     \label{fig:MSPEBarDyn}
   \end{subfigure}
       \hspace{0.2cm}
     \begin{subfigure}[b]{0.425\linewidth}
     \includegraphics[width=\textwidth]{BARPLOTLOGALPHANY.png}
-    \caption{Zoomet ind på den røde linje i ovenstående figur, viser altså gennemsnitlig Log-Loss for hver $\lambda$. Hver ende på barene er en standardfejl fra gennemsnittet for den dynamiske model med lasso-straf}
+    \caption{Zoomet ind på den røde linje i ovenstående figur, viser altså gennemsnitlig Log-Loss for hver $\lambda$. Hver ende på barene er en standardfejl fra gennemsnittet for den Dynamiske model med lasso-straf}
     \label{fig:LogLossBarDyn}    
     \end{subfigure}
-\caption{\textit{MSPE og Log-Loss fra Kryds-Validering i den Dynamiske Rao Kupper Model}}
+\caption{\textit{MSPE og Log-Loss prædiktionsfejl fra Kryds-Validering i den Dynamiske Model}}
   \label{fig:MSPELOGLOSDYN}
 \end{figure}
 %FIGUR TIL STATISK RAO KUPPER
@@ -1026,24 +1037,24 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
   \centering
   \begin{subfigure}[b]{0.4\textwidth}
         \includegraphics[width=\textwidth]{MSPESTATISK1.png}
-    \caption{Kvadreret prædiktionsfejl mod $\lambda$ for den Generelle Rao Kupper Model med lasso-straf, hvor hver linje viser fejlene tilhørende én kamp, og den sorte linje viser gennemsnittet af fejlene, altså MSPE}
+    \caption{Kvadreret prædiktionsfejl mod $\lambda$ for Rao Kupper modellen med lasso-straf, hvor hver linje viser fejlene tilhørende én kamp, og den sorte linje viser gennemsnittet af fejlene, altså MSPE}
     \label{fig:MSPEStat}
   \end{subfigure}
   \hspace{0.2cm}
   \begin{subfigure}[b]{0.4\textwidth}
     \includegraphics[width=\textwidth]{LOGLOSSSTATISK1.png}
-    \caption{Log-prædiktionsfejl mod $\lambda$ for den Generelle Rao Kupper model med lasso-straf, hvor hver linje viser fejlene tilhørende én kamp, og den sorte linje viser gennemsnittet af fejlene}
+    \caption{Log-prædiktionsfejl mod $\lambda$ for Rao Kupper modellen med lasso-straf, hvor hver linje viser fejlene tilhørende én kamp, og den sorte linje viser gennemsnittet af fejlene}
     \label{fig:LogLossStat}  
     \end{subfigure}
   \begin{subfigure}[b]{0.4\textwidth}
     \includegraphics[width=\textwidth]{MSPEBARPLOTSTATNY1.png}
-    \caption{Zoomet ind på den sorte linje i ovenstående figur, viser altså MSPE for hver $\lambda$. Hver ende på barene viser en standardfejl for MSPE'en fra Rao Kupper modellen med lasso-straf                                       }
+    \caption{Zoomet ind på den sorte linje i ovenstående figur, viser altså MSPE for hver       $\lambda$. Hver ende på barene viser en standardfejl for MSPE'en fra Rao Kupper          modellen med lasso-straf}
     \label{fig:MSPEBarStat}
   \end{subfigure}
       \hspace{0.2cm}
     \begin{subfigure}[b]{0.4\textwidth}
     \includegraphics[width=\textwidth]{STATLOGLOSSBARNY1.png}
-    \caption{Zoomet ind på den røde linje i ovenstående figur, viser altså gennemsnitlig Log-Loss for hver $\lambda$. Hver ende på barene er en standardfejl fra gennemsnittet for Rao Kupper Modellen med lasso-straf}
+    \caption{Zoomet ind på den røde linje i ovenstående figur, viser altså gennemsnitlig Log-Loss for hver $\lambda$. Hver ende på barene er en standardfejl fra gennemsnittet for Rao Kupper modellen med lasso-straf}
     \label{fig:LogLossBarStat}  
     \end{subfigure}
 \caption{\textit{MSPE og Log-Loss fra Kryds-Validering i Rao Kupper Modellen}}
@@ -1117,10 +1128,9 @@ Dynamisk Model & 0.590 & 0.993 & -0.015 \\
 
 \clearpage
 \section{Diskussion}
-Tabel \ref{tab:EstKoefOptLambda} viser de endelige estimater for parameterkoefficienterne tilhørende Rao Kupper modellen og den Dynamiske Model. Til at estimere koefficienterne til den Dynamiske model valgte vi at bruge $\alpha=3$, eftersom den gav den største likelihoodværdi i vores insample test. Eftersom vi har valgt $\alpha$-værdien ved blot at fitte modellen på det fulde data, har vi ikke noget belæg for at den valgte værdi vil passe godt på ukendt data. En anden og måske bedre metode til at vælge denne $\alpha$-værdi ville være at udvælge den ved krydsvalidering, på samme vis som vi har valgt $\lambda$-værdien, ydermere kunne der testes på flere års data, for at få et mere generelt billede af hvordan den influerer på modellen. I det hele taget ville det være mere relevant at estimere den Dynamiske models parametre ud fra flere års data, især når den skal bruges til at prædiktere på ukendt data. Det samme gælder Rao Kupper modellen, hvis man gerne vil få et indblik i hvilke kovariater der influerer på rangeringen. Hvis det eneste der ønskes med Rao Kupper modellen er at rangere nogle hold eller produkter, kan man med fordel estimere styrkerne direkte uden brug af data, ud fra ligning (\ref{func:LikelihoodUdenBeta}). \textcolor{blue}{Ved at estimere styrkerne ved den metode, vil man også mindske risikoen for Type I og II fejl, eftersom der vil være færre parametre at teste.} \\
+Til at estimere koefficienterne til den Dynamiske model valgte vi at bruge $\alpha=3$, eftersom den gav den største likelihoodværdi i vores insample test. Eftersom vi har valgt $\alpha$-værdien ved blot at fitte modellen på det fulde data, har vi ikke noget belæg for at den valgte værdi vil passe godt på ukendt data. En anden og måske bedre metode til at vælge denne $\alpha$-værdi ville være at udvælge den ved krydsvalidering, på samme vis som vi har valgt $\lambda$-værdien. Ydermere kunne der testes på flere års data, for at få et mere generelt billede af hvordan den influerer på modellen. I det hele taget ville det være mere relevant at estimere den Dynamiske models parametre ud fra flere års data, især når den skal bruges til at prædiktere på ukendt data. Det samme gælder for Rao Kupper modellen, hvis man gerne vil få et indblik i hvilke kovariater der influerer på rangeringen. Hvorimod hvis det eneste, der ønskes med Rao Kupper modellen er at rangere nogle hold eller produkter, kan man med fordel estimere styrkerne uden brug af data, med udgangspunkt i ligning (\ref{func:LikelihoodUdenBeta}). \textcolor{blue}{Ved at estimere styrkerne ved den metode, vil man også mindske risikoen for Type I og II fejl, eftersom der vil være færre parametre at teste.} \\
+På trods af at vi har fokuseret på anvendelsen af disse modeller på fodboldhold, er der ikke nogen teoretisk forskel på om det er fodboldhold, vin, kød eller noget helt fjerde der skal rangeres. I nogle produktkategorier har tid også en stor betydning, eksempelvis kunne man forestille sig, at der er forskel på forbrugerpræferencerme af juleøl og cider alt efter sæsonen, som giver anledning til at bruge $\alpha$-parametret, for at fange de trends der kan være i markedet. Her kan en spillerunde være en anden tidsindeling af eksempelvis et år, som gør det muligt at rangere et produkt ud fra forbrugernes præferencer de seneste uger/måneder fremfor at tage udgangspunkt i hele det sidste år. \\Hvis den Dynamiske Model bruges på produkter, kan den ligeledes anvendes til at prædiktere hvordan en forbruger eller forbrugergruppe vil reagere på en gruppe af produkter. Her kan odds-fejlen oversættes til en producent, hvor producenten estimerer sandsynligheden for at forbrugergruppen køber hvert af produkterne, og derefter producerer en tilsvarende mængde af hvert produkt. Produkterne kan her, ligesom odds, have forskellige dækningsbidrag, og man kan med udgangspunkt i sandsynlighederne kontra dækningsbidraget, optimere sin estimerede profit. 
 
-
-\textbf{produktsammenligning}
 \section{Konklusion}
 Konklusion
 \clearpage
