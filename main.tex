@@ -140,14 +140,14 @@
 	
 	\vfill\vfill\vfill % Position the date 3/4 down the remaining page
 	
-	{\large{25 Maj 2020}} % Date, change the \today to a set date if you want to be precise
+	{\large{25 maj 2020}} % Date, change the \today to a set date if you want to be precise
 	
 	%------------------------------------------------
 	%	Logo
 	%------------------------------------------------
 	
 	%\vfill\vfill
-	\includegraphics[width=0.7 \textwidth]{GLR2.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
+	\includegraphics[width=0.7 \textwidth]{GLR2.png}\\[1cm]% Include a department/university logo - this will require the graphicx package
 	 
 	%----------------------------------------------------------------------------------------
 	
@@ -155,7 +155,8 @@
 	
 \end{titlepage}
 \begin{abstract}
-In a model for ranking products based on paired comparisons, the probability of product $i$ being preferred to product $j$ is a function of   
+In a model for ranking products based on paired comparisons, the probability of product $i$ being preferred to product $j$ is a function of their relative strengths. Our first purpose is to show how the model is generalized to include the outcome tie and how the lasso method can be used to selecting important parameters. Our second and more specific purpose is to implement a suitable code to test the model on ranking football teams and predicting the outcome of football matches in the danish \textit{Superliga}.\newline\newline
+\textit{Key words: }\;\;\; Bradley-Terry model, Rao-Kupper model, Lasso, rank analysis, sports predicting. 
 \end{abstract}
 \clearpage
 \renewcommand{\contentsname}{Indhold}
@@ -179,15 +180,15 @@ Tjek efter blå textrettelser \\
 \sout{Standardfejl i lasso} \\
 
 \section{Indledning}
-Rangeringer af grupper spiller en stor rolle i vores samfund, det bliver først og fremmest brugt i konkurrencer, men også indirekte hver gang vi foretager et valg med flere muligheder. Hver gang vi handler ind, skal vi foretage et valg mellem forskellige produkter, hvilket ender ud i at vi foretrækker ét produkt over et andet/de andre mulige produkter. Til at beskrive disse rangeringer foreslog Bradley og Terry (1952) \cite{BradleyTerry}, en model til at rangere grupper ud fra parvise sammenligninger, hvor der for hver sammenligning altid vil være et foretrukket valg. Denne model er en grundsten i mange rangeringssystemer, eksempelvis ELO som først blev anvendt til skakmesterskaber, men i dag bliver brugt til rangeringer indenfor alverdens sportsgrene. \\
-At der altid i parvise sammenligninger kun vil være to mulige udfald, er dog ikke en generel nok antagelse; ofte vil der være situationer hvor der ikke kan træffes ét klart foretrukket valg. Til at beskrive disse situationer har Rao og Kupper \cite{RaoKupper} videreudviklet modellen, til at kunne beskrive parvise sammenligninger med tre udfald, hvilket åbner op for, at vi kan rangere langt flere grupper. Metoden til at rangere grupperne, bygger på at der estimeres styrker for hvert element i gruppen, ud fra udfaldene af forrige sammenligninger i gruppen. Udfaldende for de parvise sammenligninger, kan ved hjælp af styrkerne oversættes til sandsynligheder, for hvad fremtidige udfald af parvise sammenligninger vil blive. Det sidste er i tilfælde hvor man allerede har defineret et klart rangeringssystem, som i sports verdenen, det mest spændende at gå i dybden med. Af denne årsag vil vi i denne rapport implementere Rao og Kuppers model på to forskellige måder; en til rangering og en til forudsigelse af fremtidige udfald. \\
-
+Rangeringer af grupper spiller en stor rolle i vores samfund, det bliver først og fremmest brugt i konkurrencer, men også indirekte hver gang vi foretager et valg med flere muligheder. Hver gang vi handler ind, skal vi foretage et valg mellem forskellige produkter, hvilket ender ud i at vi foretrækker ét produkt over et andet/de andre mulige produkter. Til at beskrive disse rangeringer foreslog Bradley og Terry (1952) \cite{BradleyTerry}, en model til at rangere grupper ud fra parvise sammenligninger, hvor der for hver sammenligning altid vil være et foretrukket valg. Denne model er en grundsten i mange rangeringssystemer, eksempelvis ELO-rating som bliver anvendt til at rangere skakspillere. At spørge en forbruger om at rangere to produkter ad gangen, fremfor at rangere en hel gruppe simultant, er i praksis en mere håndterbar metode, ikke mindst fordi det efterlader forbrugeren med et mindre udfaldsrum.\\
+At der altid i parvise sammenligninger kun vil være to mulige udfald, er dog ikke en generel nok antagelse; ofte vil der være situationer hvor der ikke kan træffes ét klart foretrukket valg. Til at beskrive disse situationer har Rao og Kupper (1967) \cite{RaoKupper} videreudviklet modellen, til at kunne beskrive parvise sammenligninger med tre udfald, hvilket åbner op for, at vi kan rangere langt flere grupper. Metoden til at rangere grupperne, bygger på at der estimeres styrker for hvert element i gruppen, ud fra udfaldene af forrige sammenligninger i gruppen. Udfaldende for de parvise sammenligninger, kan ved hjælp af styrkerne oversættes til sandsynligheder, for hvad fremtidige udfald af parvise sammenligninger vil blive. Det sidste er i tilfælde hvor man allerede har defineret et klart rangeringssystem, som i sports verdenen, det mest spændende at gå i dybden med. Af denne årsag vil vi i denne rapport redegøre for og implementere Rao og Kuppers model i \textit{R} på to forskellige måder; en til rangering og en til forudsigelse. I mangel af bedre ord, har vi i rapporten valgt at omtale anvendelserne af Rao og Kuppers model som henholdsvis "Rao-Kupper" og "den dynamiske model" til rangering og til forudsigelse. Tanken bag er at "Rao-Kupper" \\
+Et problem der kun bliver større og større i den digitale tidsalder, er den store mængde af data der er tilgængelig, og dermed problemet med hvilket datamateriale man skal anvende. Til at løse dette problem foreslog Robert Tibshirani (1992) \cite{RobertTibshirani}, en løsning; lasso. Lasso er en metode til at bestemme størrelsen samt udvælge de mest beskrivende parametre i en model, til at forbedre dens prædiktionsevne. Denne metode vil vi i opgaven anvende til at forbedre vores model.   
+ \\ \newline
+Rapporten er struktureret i fire hovedafsnit. Afsnit 2 beskriver teorien bag udviklingen fra Bradley-Terry modellen til Rao-Kupper modellen, og redegør for teorien bag hvordan den kan implementeres i praksis ved brug af kovariater til at estimere styrkerne. Afsnit 3 beskriver hvordan modellen skal anvendes til at rangere og hvordan den skal anvendes til at forudsige, samt hvordan den bliver implementeret og testet. Afsnit 4 forklarer idéen og teorien bag lasso, som bruges til at mindske størrelsen og udvælge de mest beskrivende parametre i modellen. Afsnit 5 indeholder resultater fra implementeringen af lasso og afsluttende bemærkninger om hvordan lasso har influeret modellen.
 
 grupper er svært men par er nemt. 
 \subsection{Problemformulering}
 Hvordan kan Rao-Kuppers generalisering af Bradley-Terry modellen anvendes til bestemmelse af sandsynligheder ud fra parvise sammenligninger i situationer med tre udfald, og hvordan kan Lasso anvendes til at forbedre denne? Hvordan kan modellen implementeres og anvendes i praksis til at estimere sandsynligheder for udfald af fodboldkampe i superligaen? 
-
-Formålet med denne opgave er at undersøge hvordan Bradley-Terry modellen kan generaliseres og lave parvise sammenligninger med tre udfald og optimere parameterudvælgelsen ved brug af lasso, samt udvikle koden til at eksekvere dette. 
 \subsection{Afgrænsning}
 Rapporten fokuserer på hvordan det er muligt at rangere grupper ud fra parvise sammenligninger, 
 Start med hvad vi har gjort og slut med hvad vi ikke har gjort. 
@@ -197,7 +198,7 @@ Det er dog ikke gjort i dette projekt, eftersom vi har valgt at fokusere på hvo
 I dette afsnit præsenterer vi, hvordan vi tolker Bradley-Terry modellen, hvordan vi bruger modellen til at lave parvise sammenligninger, samt hvordan vi estimerer modellens parametre.\\ \newline
 Bradley og Terry (1952)\cite{BradleyTerry} introducerer en statistisk model til rangering, af eksempelvis forbrugervurderinger af produkter eller styrker af fodboldhold, ved parvise sammenligninger. Dette gøres ved at estimere nytter for produkterne eller styrker af fodboldholdene. I førstnævnte eksempel vil modellen yderligere kunne bruges til at estimere sandsynligheden for, at en forbruger foretrækker ét produkt over et andet - i sidstnævnte eksempel til at estimere sandsynligheden for, at BIF vinder over FCK i deres næste opgør.\\ I dette projekt tager vi udgangspunkt i eksemplet med sammenligninger af fodboldhold og når vi i løbet af projektet beskriver parvise sammenligninger, vil vi altid tage udgangspunkt i sammenligningen af hold $i$ med hold $j$, hvor $i<j$. Vi lader \\$i \in \{1,..,h-1\}$ og $j\in \{i+1,...,h\}$ hvor $h\in \mathbb{Z}^+$ er antal fodboldhold der sammenlignes. På denne måde undgår vi at gentage parvise sammenligninger af hold \textit{i} og hold \textit{j}, samt at sammenligne hold med sig selv. 
 \subsection{Bradley-Terry modellen}
-Modellen som Bradley og Terry (1952)\cite{BradleyTerry} foreslår skriver vi som:
+Modellen som Bradley og Terry (1952)\cite{BradleyTerry} foreslog skriver vi som:
 \begin{align*}
     P(i\ vinder\ over\ j) = p_{i\cdot ij} = \frac{\pi_i}{\pi_i+\pi_j},
 \end{align*}
@@ -308,8 +309,7 @@ Vi vælger, at omskrive styrkerne til $\pi_i=e^{\gamma_i}$, hvor $\gamma_i=\log(
 +Y_{j\cdot ij}\Big{(}\gamma_j-\log(e^{\gamma_j}+\theta e^{\gamma_i})\Big{)}\\
 & +(r_{ij}-Y_{i\cdot ij}-Y_{j\cdot ij}) \Big{(} \log(\theta^2-1)+\gamma_i+\gamma_j-\log(e^{\gamma_i}+\theta e^{\gamma_j})-\log(e^{\gamma_j}+\theta e^{\gamma_i})\Big{)}.
 \end{align*}
-\# hvorfor gør vi det\\
-\textcolor{blue}{Vi sætter nu $\gamma_i=x_i^T\beta$, hvor $x_i$ er den $i$'te række i designmatricen, som indeholder observationer for hold $i$ og $\beta$ er den tilhørende parametervektor. $\beta_k$ er således parameterkoefficienten tilhørende den $k$'te søjle i designmatricen, som indeholder kovariater for den $k$'te variabel.}\\
+Eftersom vi ønsker at beskrive styrkerne ved brug af kovariater, sætter vi nu $\gamma_i=x_i^T\beta$, hvor $x_i$ er den $i$'te række i designmatricen, som indeholder observationer for hold $i$ og $\beta$ er den tilhørende parametervektor. $\beta_k$ er således parameterkoefficienten tilhørende den $k$'te søjle i designmatricen, som indeholder kovariater for den $k$'te variabel.\\
 \begin{align*}
 \textit{l}(\beta,\theta)
 &=\sum_{i<j}\Big{[}Y_{i\cdot ij}\Big{(}x_i^T\beta-\log(e^{x_i^T\beta}+\theta e^{x_j^T\beta})\Big{)}
@@ -793,8 +793,7 @@ At den dynamiske model estimerer den observerede fordeling af (hjemmesejr, udese
   \caption{\textit{Boksplot af estimerede sandsynligheder mod observerede udfald. De røde, blå og grønne boksplot viser fordelingerne af hhv. estimerede hjemmesejrer, udesejrer og uafgjorte kampe. De stiplede linjer viser de emperiske middelværdier for de observerede udfald.}}
   \label{fig:boxplot}
 \end{figure}
- \\
-\newpage 
+
 For at se nærmere på de estimerede sandsynligheder, kigger vi på deres respons-residualer mod fittede værdier for de tre udfald; dette ses i Figur \ref{fig:residualplot}. Den sorte linje viser middelværdien af residualerne, og den røde linje er en kerneudglatning. Båndbredderne er valgt ved at tage udgangspunkt i \textit{R}-funktionen {\fontfamily{qcr}\selectfont dpill}, og efterfølgende rettet til. Vi ser, at middelværdierne for den dynamiske model er tættere på 0 end de er for Rao-Kupper. Rao-Kupper har en middelværdi over 0 for hjemmesejr og under 0 for udesejr. Dette er en forventelig følge, da Rao-Kupper generelt vil overestimere sandsynligheden for udesejr og underestimere sandsynligheden for hjemmesejr. Idet den ikke inkorporerer nogen hjemmebaneparameter. Der ser ikke ud til at danne sig noget klart mønster for de fittede værdier, dog er der noget støj ved halerne. Residualerne tilhørende de uafgjorte kampe er meget ens for de to modeller, hvilket også måtte forventes, da $\theta$ er meget ens for dem. Der er dog en lidt større spredning for uafgjort i de fittede værdier for den dynamiske model, hvilket skyldes forskellen i $\beta$'erne, og især implementeringen af hjemmebanefordelen. Det er generelt svært at sige noget konkret om disse residualer, eftersom vi har så få observationer i hver kategori. Derfor vælger vi heller ikke at fjerne nogle af de outliers der befinder sig i halerne.
 \begin{figure}[h!]
   \centering
@@ -1154,7 +1153,7 @@ Ud fra tesen om, at bookmakerenes odds har en korrelation med vores estimerede s
 \begin{align}
     \overline{\text{Profit}}&= \frac{1}{N}\sum_t\sum_{i<j}\Big{[} \underbrace{\mathcal{C}\big{(}\hat{p}_{i\cdot ij}(t)odds_i(t)y_{i\cdot ij}(t)+\hat{p}_{j\cdot ij}(t)odds_j(t)y_{j\cdot ij}(t)+\hat{p}_{0\cdot ij}(t)odds_0(t)y_{0\cdot ij}(t)\big{)}}_{\text{Marginal Gevinst}} -\underbrace{\mathcal{C}}_{Omk}\Big{]},\label{func:Profit}
 \end{align}
-hvor den marginale gevinst er gevinsten ved oddsne placeret på kampen mellem hold $i$ og $j$ i spillerunde t, og $\mathcal{C}$, tolker vi som den marginale omkostning eller pris for at placere disse odds. I Figur \ref{fig:OddsPlot} har vi taget de inverse af vores sandsynligheder for at sammenligne med bookmakernes udbudte odds fordelt på hjemmebanesejr, udebanesejr og uafgjort. Vi bruger dem som benchmark, men det skal tages in mente, at bookmakernes odds konverteret til sandsynligheder summerer over 1. Derudover er det også klart, at bookmakerne for at mindske risiko, justerer deres odds løbende i forhold til hvor store beløb der er placeret på de forskellige odds. For lave fittede værdier minder begge modellers estimerede odds, om bookmakernes odds, men for høje værdier stiger variansen. Vi ser en klar tendens til forøget varians ved høje fittede værdier. Derudover er det bemærkelsesværdigt, at for ikke-uafgjorte tyder det på at middelværdierne er ens for bookmakernes odds og de estimerede odds. Men for uafgjorte kampe, er der en klar tendens til at vores estimerede odds er højere end bookmakernes. Da bookmakernes sandsynligheder ikke summer til 1, er det klart at der vil være en forskel i middelværdier samlet set.  
+hvor den marginale gevinst er gevinsten ved oddsne placeret på kampen mellem hold $i$ og $j$ i spillerunde t, og $\mathcal{C}$, tolker vi som den marginale omkostning eller pris for at placere disse odds. \\I Figur \ref{fig:OddsPlot} har vi taget de inverse af vores sandsynligheder for at sammenligne med bookmakernes udbudte odds fordelt på hjemmebanesejr, udebanesejr og uafgjort. Vi bruger dem som benchmark, men det skal tages in mente, at bookmakernes odds konverteret til sandsynligheder summerer over 1. Derudover er det også klart, at bookmakerne for at mindske risiko, justerer deres odds løbende i forhold til hvor store beløb der er placeret på de forskellige odds. For lave fittede værdier minder begge modellers estimerede odds, om bookmakernes odds, men for høje værdier stiger variansen. Vi ser en klar tendens til forøget varians ved høje fittede værdier. Derudover er det bemærkelsesværdigt, at for ikke-uafgjorte tyder det på at middelværdierne er ens for bookmakernes odds og de estimerede odds. Men for uafgjorte kampe, er der en klar tendens til at vores estimerede odds er højere end bookmakernes. Vi ser, at vores estimerede odds for uafgjort aldrig går under 4. Det skyldes, at vi har en øvre grænse for den estimerede sandsynlighed for uafgjort (når to hold er lige gode), som er bestemt af $\theta$. For $\theta$ som hendholdsvis for Rao-kupper og den dynamiske model er 1.662 og 1.643, bliver de respektive nedre grænser for estimerede odds 4.021 og 4.110. Da bookmakernes sandsynligheder ikke summer til 1, er det klart at der vil være en forskel i middelværdier samlet set.   
 
 \begin{figure}[ht!]
   \centering
@@ -1198,7 +1197,6 @@ hvor den marginale gevinst er gevinsten ved oddsne placeret på kampen mellem ho
 \end{figure}
 \clearpage
 Til at undersøge hvordan de to modeller med og uden lasso-straf præsterer på ukendt data, har vi valgt at teste dem på Superligaen for sæson 2014-2015, hvor vi starter fra 3. spillerunde. Vi måler dem igen op i mod hinanden med MSPE og Log-Loss prædiktionsfejl. Resultatet af undersøgelsen ses i Tabel \ref{tab:Test2014}. Vi ser at lasso i begge tilfælde forbedrer modellernes prædiktionsevne. Forbedring ses at være størst i Rao-Kupper, hvor prædtiktionsfejlen bliver mindskes med cirka 14\%.  Vi ser også, at den dynamiske model opnår den ben bedste prædiktionsevne både før og efter. Faktisk er den dynamiske uden lasso bedre end Rao-Kupper med lasso. Begge modeller ses, at være markant bedre end baseline modellen efter lasso.  
-
 \begin{table}[thb!]
 \centering
 \begin{adjustbox}{max width=\textwidth}
@@ -1235,7 +1233,7 @@ Vi har i opgaven vist, hvordan Rao-Kupper modellen kan bruges til at rangere ud 
 \\
 
 
-De to metoder vi har valgt at anvende Rao Kupper modellen på, viste sig som forventet at have hver deres anvendelsesområde. Vores anvendelse af Rao Kupper modellen er bedst til at rangere holdene, hvor den Dynamiske model er bedst til at estimere punktsandsynligheder for udfald. Begge modeller blev ud fra tabsfunktionerne forbedret med lasso, men den Dynamiske model fik den største forbedring. Hvorvidt denne forbedring viser sig at være signifikant, kan vi ikke konkludere eftersom 
+\sout{De to metoder vi har valgt at anvende Rao Kupper modellen på, viste sig som forventet at have hver deres anvendelsesområde. Vores anvendelse af Rao Kupper modellen er bedst til at rangere holdene, hvor den Dynamiske model er bedst til at estimere punktsandsynligheder for udfald. Begge modeller blev ud fra tabsfunktionerne forbedret med lasso, men den Dynamiske model fik den største forbedring. Hvorvidt denne forbedring viser sig at være signifikant, kan vi ikke konkludere eftersom }
 \clearpage
 \section{Litteraturliste}
 Litteraturliste
