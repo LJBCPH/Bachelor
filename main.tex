@@ -60,6 +60,7 @@
 }
 \usepackage{caption}
 \captionsetup[figure]{labelfont=Large}
+\captionsetup[table]{labelfont=Large}
 \addto\captionsenglish{%
   \renewcommand{\figurename}{Figur}%
   \renewcommand{\tablename}{Tabel}%
@@ -101,7 +102,7 @@
 	
 	\HRule\\[0.4cm]
 	
-	{\huge\bfseries En generalisering af Bradley-Terry modellen med parameterestimering og udvælgelse ved brug af lasso}\\[0.4cm] % Title of your document
+	{\huge\bfseries Implementering af Rao-Kupper modellen med parameteroptimering og -udvælgelse ved brug af lasso}\\[0.4cm] % Title of your document
 	
 	\HRule\\[1.5cm]
 	
@@ -139,7 +140,7 @@
 	
 	\vfill\vfill\vfill % Position the date 3/4 down the remaining page
 	
-	{\large{May 25, 2020}} % Date, change the \today to a set date if you want to be precise
+	{\large{25 Maj 2020}} % Date, change the \today to a set date if you want to be precise
 	
 	%------------------------------------------------
 	%	Logo
@@ -154,24 +155,47 @@
 	
 \end{titlepage}
 \begin{abstract}
-\textcolor{blue}{English} Lynhurtig Bradley-Terry modellen anvendes til at lave parvise sammenligninger af f.eks. fodboldhold styrker. i den oprindelig model (Bradley \& Terry 1952) antages at der altid vil være en vinder, men da dette er en urealistisk betragtning blev modellen udvidet (Rao-Kupper 1967). til at inkludere en grænseværdiparameter som gør det muligt at indrage udfaldet uafgjort. Dette papir tager udgangspunkt i denne model og betragter anvendelsen af LASSO optimering til udvælgelsen af parametre til estimering af de forskellige holds styrke. \textcolor{red}{Vi viser i denne opgave hvordan rao-kuppers model kan bruges til at rangere hold, og hvordan man ved tilføje et dynamisk element kan bruge den til at prædiktere udfald af parvise sammenligningen med tre udfald. Yderligere viser, hvordan lassostraf kan anvendes til at optimere denne prædiktion}
+In a model for ranking products based on paired comparisons, the probability of product $i$ being preferred to product $j$ is a function of   
 \end{abstract}
 \clearpage
-\renewcommand{\contentsname}{Indholdsfortegnelse}
+\renewcommand{\contentsname}{Indhold}
 \clearpage
 \tableofcontents
 \clearpage
 \newpage
 \pagenumbering{arabic}
-\section{Indledning}
+\#TODOLIST
+Abstract\\
+Konklusion\\
+Indledning\\
+evt kød på diskussion\\
+\sout{Fix Plots}\\
+\sout{Plots af forskel i odds} \\
+Tjek alle ligninger \\
+\sout{Opdater styrker og betaer i tabel}\\
+\sout{Beregn styrker for lasso modeller} \\
+Preface \\
+Tjek efter blå textrettelser \\
+\sout{Standardfejl i lasso} \\
 
+\section{Indledning}
+Rangeringer af grupper spiller en stor rolle i vores samfund, det bliver først og fremmest brugt i konkurrencer, men også indirekte hver gang vi foretager et valg med flere muligheder. Hver gang vi handler ind, skal vi foretage et valg mellem forskellige produkter, hvilket ender ud i at vi foretrækker ét produkt over et andet/de andre mulige produkter. Til at beskrive disse rangeringer foreslog Bradley og Terry (1952) \cite{BradleyTerry}, en model til at rangere grupper ud fra parvise sammenligninger, hvor der for hver sammenligning altid vil være et foretrukket valg. Denne model er en grundsten i mange rangeringssystemer, eksempelvis ELO som først blev anvendt til skakmesterskaber, men i dag bliver brugt til rangeringer indenfor alverdens sportsgrene. \\
+At der altid i parvise sammenligninger kun vil være to mulige udfald, er dog ikke en generel nok antagelse; ofte vil der være situationer hvor der ikke kan træffes ét klart foretrukket valg. Til at beskrive disse situationer har Rao og Kupper \cite{RaoKupper} videreudviklet modellen, til at kunne beskrive parvise sammenligninger med tre udfald, hvilket åbner op for, at vi kan rangere langt flere grupper. Metoden til at rangere grupperne, bygger på at der estimeres styrker for hvert element i gruppen, ud fra udfaldene af forrige sammenligninger i gruppen. Udfaldende for de parvise sammenligninger, kan ved hjælp af styrkerne oversættes til sandsynligheder, for hvad fremtidige udfald af parvise sammenligninger vil blive. Det sidste er i tilfælde hvor man allerede har defineret et klart rangeringssystem, som i sports verdenen, det mest spændende at gå i dybden med. Af denne årsag vil vi i denne rapport implementere Rao og Kuppers model på to forskellige måder; en til rangering og en til forudsigelse af fremtidige udfald. \\
+
+
+grupper er svært men par er nemt. 
 \subsection{Problemformulering}
-Problemformulering ...
+Hvordan kan Rao-Kuppers generalisering af Bradley-Terry modellen anvendes til bestemmelse af sandsynligheder ud fra parvise sammenligninger i situationer med tre udfald, og hvordan kan Lasso anvendes til at forbedre denne? Hvordan kan modellen implementeres og anvendes i praksis til at estimere sandsynligheder for udfald af fodboldkampe i superligaen? 
+
+Formålet med denne opgave er at undersøge hvordan Bradley-Terry modellen kan generaliseres og lave parvise sammenligninger med tre udfald og optimere parameterudvælgelsen ved brug af lasso, samt udvikle koden til at eksekvere dette. 
 \subsection{Afgrænsning}
+Rapporten fokuserer på hvordan det er muligt at rangere grupper ud fra parvise sammenligninger, 
+Start med hvad vi har gjort og slut med hvad vi ikke har gjort. 
+
 Det er dog ikke gjort i dette projekt, eftersom vi har valgt at fokusere på hvordan modellen kan anvendes med data, hvormed vi har prøvet
 \section{Generalisering af Bradley-Terry modellen}
 I dette afsnit præsenterer vi, hvordan vi tolker Bradley-Terry modellen, hvordan vi bruger modellen til at lave parvise sammenligninger, samt hvordan vi estimerer modellens parametre.\\ \newline
-Bradley og Terry (1952)\cite{BradleyTerry} introducerer en statistisk model til rangering, af eksempelvis forbrugervurderinger af produkter eller styrker af fodboldhold, ved parvise sammenligninger. Dette gøres ved at estimere nytter for produkterne eller styrker af fodboldholdene. I førstnævnte eksempel vil modellen yderligere kunne bruges til at estimere sandsynligheden for, at en forbruger foretrækker ét produkt over et andet - i sidstnævnte eksempel til at estimere sandsynligheden for, at BIF vinder over FCK i deres næste opgør.\\ I dette projekt tager vi udgangspunkt i eksemplet med sammenligninger af fodboldhold og når vi i løbet af projekt beskriver parvise sammenligninger, vil vi altid tage udgangspunkt i sammenligningen af hold $i$ med hold $j$, hvor $i<j$ altid. Vi lader \\$i \in \{1,..,h-1\}$ og $j\in \{i+1,...,h\}$ hvor $h\in \mathbb{Z}^+$ er antal fodboldhold der sammenlignes. På denne måde undgår vi at gentage parvise sammenligninger af hold \textit{i} og hold \textit{j}, samt at sammenligne hold med sig selv. 
+Bradley og Terry (1952)\cite{BradleyTerry} introducerer en statistisk model til rangering, af eksempelvis forbrugervurderinger af produkter eller styrker af fodboldhold, ved parvise sammenligninger. Dette gøres ved at estimere nytter for produkterne eller styrker af fodboldholdene. I førstnævnte eksempel vil modellen yderligere kunne bruges til at estimere sandsynligheden for, at en forbruger foretrækker ét produkt over et andet - i sidstnævnte eksempel til at estimere sandsynligheden for, at BIF vinder over FCK i deres næste opgør.\\ I dette projekt tager vi udgangspunkt i eksemplet med sammenligninger af fodboldhold og når vi i løbet af projektet beskriver parvise sammenligninger, vil vi altid tage udgangspunkt i sammenligningen af hold $i$ med hold $j$, hvor $i<j$. Vi lader \\$i \in \{1,..,h-1\}$ og $j\in \{i+1,...,h\}$ hvor $h\in \mathbb{Z}^+$ er antal fodboldhold der sammenlignes. På denne måde undgår vi at gentage parvise sammenligninger af hold \textit{i} og hold \textit{j}, samt at sammenligne hold med sig selv. 
 \subsection{Bradley-Terry modellen}
 Modellen som Bradley og Terry (1952)\cite{BradleyTerry} foreslår skriver vi som:
 \begin{align*}
@@ -183,7 +207,7 @@ Eftersom modellens parametre kan skaleres op uden at det påvirker sandsynlighed
 \begin{align*}
 p_{i\cdot ij} = \frac{\pi_i}{\pi_i+\pi_j} = \frac{\pi_iC}{\pi_iC+\pi_jC},
 \end{align*}
-ses modellen at være overparameteriseret. Det er dermed ikke muligt, at identificere de enkelte styrkeparametre, men det er muligt at identificere forholdet mellem to styrkeparametre. Det problem klarer vi ved, at sætte et af holdenens styrker fast, for så at estimere de andre holds styrker relativt til holdet med fast styrke.\\
+ses modellen at være overparameteriseret. Det er dermed ikke muligt at identificere de enkelte styrkeparametre, men det er muligt at identificere forholdet mellem to styrkeparametre. Det problem klarer vi ved, at sætte et af holdenens styrker fast, for så at estimere de andre holds styrker relativt til holdet med fast styrke.\\
 Ved omskrivning af $p_{i\cdot ij}$ udtrykker vi dette styrkeforhold som:
 \begin{align*}
     p_{i\cdot ij} &= \frac{\pi_i}{\pi_i+\pi_j}=\frac{1}{1+\frac{\pi_j}{\pi_i}}=\frac{1}{1+e^{-(\log(\pi_i)-\log(\pi_j))}}\\
@@ -196,7 +220,7 @@ hvor $V_{i\cdot ij}=\log(\pi_i)-\log(\pi_j)$ beskriver log-styrken for hold \tex
 &\int_{-\infty}^\infty f(V_{i\cdot ij}) \text{  d} V_{i\cdot ij} = 1,
 \end{align*}
 er $f(V_{i\cdot ij})$ en tæthed for den logistiske fordeling, hvor $F(V_{i\cdot ij})$ er den tilhørende fordelingsfunktion, som for givne styrke parametre, kan opfattes som en sandsynlighed.\\
-Sandsynligheden for at hold \textit{i} vinder over hold \textit{j} på en given kampdag, kan dermed tolkes som sandsynligheden for at hold \textit{i}'s dagsform er bedre (større) end hold \textit{j}'s:
+Sandsynligheden for, at hold \textit{i} vinder over hold \textit{j} på en given kampdag, kan dermed tolkes som sandsynligheden for at hold \textit{i}'s dagsform er bedre (større) end hold \textit{j}'s:
 \begin{align*}
 p_{i\cdot ij}&=P\big{\{}Y_i>Y_j\big{\}}
 \\&=P\big{\{}(\pi_i-\pi_j)+(\epsilon_i-\epsilon_j)>0\big{\}}
@@ -205,9 +229,9 @@ p_{i\cdot ij}&=P\big{\{}Y_i>Y_j\big{\}}
 \\&=\frac{\pi_i}{\pi_i+\pi_j}.\;\;
 \end{align*}
 \\
-Vi antager, at $\epsilon_i$'erne er uafhængige og gumbel fordelte, fordi det medfører at forskellen $\epsilon_i-\epsilon_j$ er logistisk fordelt, hvilket giver anledning til at bruge den logistiske linkfunktion.
+Vi antager, at $\epsilon_i$'erne er uafhængige og gumbelfordelte, fordi det medfører at forskellen $\epsilon_i-\epsilon_j$ er logistisk fordelt, hvilket giver anledning til at bruge den logistiske linkfunktion.
 \subsection{Rao-Kupper modellen}
-Indtil videre har vi antaget at en fodboldkamp altid har haft en vinder, men dette er ikke en realistisk antagelse, da fodboldkampe kan ende uafgjort. Det samme gælder forbrugervalget mellem to produkter. Realistisk set, kan en forbruger godt være ligeglad ved valget mellem to produkter, hvis produkterne giver forbrugeren tilnærmelsesvist den samme nytte. Rao og Kupper (1967) \cite{RaoKupper} foreslår en løsning på dette dilemma; at udvide Bradley-Terry modellen med en grænseværdiparameter $\theta$. $\theta$ betegner den forskel i dagsform der mindst skal være mellem to hold, for at der er en vinder; hvis $\|Y_i-Y_j\| < \theta$ bliver kampen uafgjort. Rao-Kupper opskrives som integralet af en tæthed ligesom Bradley-Terry, og giver sandsynlighederne:
+Indtil videre har vi antaget at en fodboldkamp altid har haft en vinder, men dette er ikke en realistisk antagelse, da fodboldkampe kan ende uafgjort. Det samme gælder forbrugerpræferencen mellem to produkter. Realistisk set, kan en forbruger være ligeglad ved valget mellem to produkter, hvis produkterne giver forbrugeren tilnærmelsesvist den samme nytte. Rao og Kupper (1967) \cite{RaoKupper} foreslår en løsning på dette dilemma; at udvide Bradley-Terry modellen med en grænseværdiparameter $\theta$. $\theta$ betegner den forskel i dagsform der mindst skal være mellem to hold, for at der er en vinder; hvis $\|Y_i-Y_j\| < \theta$ bliver kampen uafgjort. Rao-Kupper opskrives som integralet af en tæthed ligesom Bradley-Terry, og giver sandsynlighederne:
 \begin{equation}
 \begin{split}
     p_{i\cdot ij}&=F(V_{i\cdot ij}-\eta)=\frac{\pi_i}{\pi_i+\theta \pi_j}\\
@@ -217,7 +241,7 @@ Indtil videre har vi antaget at en fodboldkamp altid har haft en vinder, men det
 \end{equation}
 hvor $\eta=\log(\theta)>0 \rightarrow\theta>1$ og $p_{0\cdot ij}$ er sandsynligheden for det nye udfald, uafgjort. Sandsynlighederne er direkte sammenlignelige med et rangeringssystem, hvor hvert udfald giver en forskellig rangering mellem de to hold. I fodbold får vinderholdet 3 point, taberholdet 0 point og hvis kampen ender uafgjort får begge hold 1 point. Ligeledes vil en forbruger der står overfor valget mellem to produkter, enten synes det ene produkt er bedre, dårligere eller lige så godt som det andet.
 \subsection{Parameterestimering}
-I dette underafsnit viser vi en måde at estimere \textit{maximum likelihood} estimaterne og deres tilhørende fordeling i Rao-Kupper modellen.
+I dette underafsnit viser vi en måde at estimere \textit{maximum likelihood} estimaterne for parametrene i Rao-Kupper modellen og deres tilhørende fordeling.
 Rao-Kupper modellen er en delmodel af den almindelige multinomialfordelingsmodel, som vi vil tage udgangspunkt i, når vi opstiller likelihooden.\\
 Lad $y_{ij}(t)$ være en tredimensionel uafhængig stokastisk variabel, som repræsenterer en kamp mellem hold \textit{i} og hold \textit{j} til tidspunkt $t$. $y_{ij}(t)$'s, tilhørende udfaldsområde er dermed givet ved 0-1 variablene $\big{(}y_{i\cdot ij}(t),\;y_{j\cdot ij}(t),\;y_{0\cdot ij}(t)\big{)}$, som hhv. repræsenterer sejr til hold \textit{i}, sejr til hold \textit{j} og uafgjort: 
 \begin{align*}
@@ -261,7 +285,7 @@ Likelihood-funktionen som (Rao og Kupper 1967) \cite{RaoKupper} foreslår, skriv
 \;\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}^{Y_{j\cdot ij}}
 \Big{(}\frac{(\theta^2-1)\pi_i  \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}^{R_{ij}-{Y_{i\cdot ij}}-{Y_{j\cdot ij}}},\nonumber\\ \nonumber
 \end{align}
-hvor multinomialkoefficienten er udeladt, da den ligegyldig når vi estimerer parametre. Her (i ligning \ref{func:LikelihoodUdenBeta}) bliver likelihooden opstillet i forhold til antal sejre, tabte og uafgjorte mellem hver parvis sammenligning for en periode. En anden mulighed er at opskrive modellen, hvor i stedet for at kontingenstabellen indeholder udfald for hele perioden, så opdatereres den løbende for hvert tidspunkt i perioden. I denne dynamiske version af Rao-Kupper modellen bliver likelihooden:
+hvor multinomialkoefficienten er udeladt, da den er ligegyldig når vi estimerer parametre. Her (i ligning \ref{func:LikelihoodUdenBeta}) bliver likelihooden opstillet i forhold til antal sejre, tabte og uafgjorte mellem hver parvis sammenligning for en periode. En anden mulighed er at opskrive modellen, hvor i stedet for at kontingenstabellen indeholder udfald for hele perioden, så opdatereres den løbende for hvert tidspunkt i perioden. I denne dynamiske version af Rao-Kupper modellen bliver likelihooden:
 \begin{align*}
 \mathcal{L}\big{(}\pi_1,...,\pi_h,\theta\big{)}
 &=\prod_t\prod_{i<j}\Big{(}\frac{\pi_i}{\pi_i+\theta\pi_j}\Big{)}^{y_{i\cdot ij}(t)}
@@ -373,8 +397,7 @@ ad (\textit{iii}) ønsker vi, at vise:
   \Big{[}-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta^2}\Big{]} \geq \Big{[}-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta}\Big{]}\Big{[}-\frac{\partial^2 \ell(\beta;\theta)}{\partial \theta^2}\Big{]}\Big{[}-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta}\Big{]}^T
 \end{align*}
 Vi ser fra fra ligning (\ref{func:d2db2}), at $-\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta^2}$ er på formen: $C_1(x_i-x_j)(x_i-x_j)^T$ hvor $C_1$ er en positiv konstant. Vi ser fra ligning (\ref{func:d2dbt}) at $\big{[}\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta}\big{]}\big{[}\frac{\partial^2 \ell(\beta;\theta)}{\partial \beta \partial \theta}\big{]}^T$, skrives på formen $C_2^2(x_i-x_j)(x_i-x_j)^T$. Da $(x_i-x_j)(x_i-x_j)^T\geq0$ er både højresiden og venstre siden større eller lig 0. Den inverse af den andenafledte med hensyn til $\theta$ bliver en positiv skalar, hvis $(i)$ holder med streng ulighed. Størrelserne på $C_1$ og $C_2$ afhænger af fordelingen af udfald, hvor $C_1$ ændres i forhold til $R_{ij}-Y_{i\cdot ij} + R_{ij}-Y_{j\cdot ij}$ og $C_2$ ændres i forhold til $R_{ij}-Y_{i\cdot ij} - \big{(}R_{ij}-Y_{j\cdot ij}\big{)}$. Hvis der er mange uafgjorte kampe vil $C_1$ blive stor relativt til $C_2^2$. $C_2^2$ vil gå mod 0 og ligeledes blive lille relativt til $C_1$, hvis antallet af sejrer for hold $i$ og hold $j$ går mod hinanden. Hvis derimod forskellen i sejrer for hold $i$ og hold $j$ bliver stor, vil $C_2^2$ blive stor i forhold til $C_1$. Hvorvidt $(iii)$ er opfyldt, vil derfor i høj grad afhænge af fordelingen af $Y$'erne. \\\\
-Konklusionen er, at vores observerede information formentligt er PSD på et stort område.\\
-For at sikre os, at likelihood funktionen befinder sig på en konkav mængde, vælger vi at tilføje et tjek i vores Newton-Rhapson algoritme, for hvorvidt Alberts sætning er opfyldt. \\
+Konklusionen er, at vores observerede information formentligt er PSD på et stort område, men det er usikkert. Derfor vælger vi for at sikre os, at likelihood funktionen befinder sig på en konkav mængde, at tilføje et tjek i vores Newton-Rhapson algoritme, for hvorvidt Alberts sætning er opfyldt. \\
 Yderligere indfører vi \textit{linesearch}, som foreslået af Kevin P. Murphy (2012) \cite{LineSearch}. Linesearch er en metode til at sikre konvergering, samt finde den skridtlængden der forøger likelihooden mest mulig for hver iteration. Dette gøres altså for hvert skridt i Newton-Raphson, hvor skridtlængden korrigeres med $\omega \in [0,1]$ og skal opfylde:\\
 \begin{align*}
 \begin{bmatrix} \beta_{c+1}\\\theta_{c+1}\end{bmatrix} = \begin{bmatrix} \beta_c\\\theta_c\end{bmatrix} + i\big{(}\beta_c,\theta_c\big{)}^{-1}s\big{(}\beta_c,\theta_c\big{)}\omega,
@@ -383,7 +406,7 @@ ovenstående gøres ved at teste skridtlængder i faldende orden, og $\omega$ v�
 Her kan problemet opskrives som 
 $\max_{\omega \in \mathcal{N}} \ell(\beta_{c+1},\theta_{c+1})$, hvor vi i vores tilfælde vælger 
 $\mathcal{N} = \{1,\frac{1}{2},...,\frac{1}{100}\}$. Ulempen ved denne metode i praksis er at det kan være tungt at udregne likelihooden, og dermed være tungt at finde en skridtlængde; især hvis den skridtlængde der øger likelihooden er lille. På den anden side, så sikrer denne metode at algoritmen får den størst mulige skridtlængde. Hvis alternativet er at vælge en unaturlig lav skridtlængde hver gang (for at sikre konvergens), så vil denne metode øge konvergeringshastigheden.\\\par
-Standardfejlene for vores estimerede parametre, $\hat{\beta}$ og $\hat{\theta}$ finder vi ud fra kovariansmatricen: 
+Kovariansmatricen for vores estimerede parametre, $\hat{\beta}$ og $\hat{\theta}$ approksimerer vi med den inverse information: 
 \begin{align*}
 &\hat{\sigma}^2_{\beta,\theta}=i(\hat{\beta},\hat{\theta})^{-1}=
 \Big{(}-\begin{bmatrix}
@@ -392,7 +415,7 @@ Standardfejlene for vores estimerede parametre, $\hat{\beta}$ og $\hat{\theta}$ 
 \end{bmatrix}\Big{)}^{-1}\\
 \end{align*}
 \begin{align}
-\intertext{Standardfejlene $\hat{\sigma}_\beta$ og $\hat{\sigma}_\theta$ findes ved kvadratroden af diagonalen af $\hat{\sigma}^2_{\beta,\theta}$}
+\intertext{hvor standardfejlene $\hat{\sigma}_\beta$ og $\hat{\sigma}_\theta$ findes ved kvadratroden af diagonalen }
 \hat{\sigma}_{\beta,\theta}=\sqrt{\text{diag}(\hat{\sigma}^2_{\beta,\theta})}=
 \begin{bmatrix}
 \hat{\sigma}_{\beta_1}& &\\
@@ -401,7 +424,7 @@ Standardfejlene for vores estimerede parametre, $\hat{\beta}$ og $\hat{\theta}$ 
 & & & \hat{\sigma}_{\theta}
 \end{bmatrix}
 \end{align}
-Vi estimere den approksimative fordeling af styrkerne med delta-metoden. Når vi estimere styrkerne gør vi det relativt til ét af holdene, hold $i$ relativt til hold $h$ betyder at $x_i\Rightarrow x_i-x_h$.
+Vi estimere den approksimative fordeling af styrkerne med delta-metoden. Når vi estimere styrkerne gør vi det relativt til ét af holdene. Hold $i$ relativt til hold $h$ betyder at designmatricen for hold $i$ ændres fra $x_i$ til $x_i-x_h$.
 \begin{align*}
 \intertext{Først beregner vi variansen på $\log(\hat{\pi}_i)=x_i^T\hat{\beta}$}
 \text{Var}\big{[}\log(\hat{\pi}_i)\big{]}
@@ -419,8 +442,9 @@ Vi estimere den approksimative fordeling af styrkerne med delta-metoden. Når vi
 \intertext{og den approksimative fordeling af styrkerne i den dynamiske model bliver:}
 \overline{\hat{\pi_i}}(t) & \sim N\Big{(}\;\overline{e^{(x_i^T(t)\beta)}},\overline{e^{\big{(}x_i^T(t)\hat{\beta}\big{)}}}\big{(}\overline{x_i}^T\hat{\sigma}^2_\beta\overline{x_i}\big{)}\overline{e^{\big{(}x_i^T(t)\hat{\beta}\big{)}}}\;\Big{)}
 \end{align*}
-
-\subsection{Hypotesetest af modellen}
+\par
+I praksis vælger vi altså at bruge vores kovariater til at estimere de logtransformerede styrker, for så at beskrive sandsynlighederne derigennem. Til at estimere vores parameterkoefficienter bruger vi Newton-Rhapson algoritmen kombineret med skridtlængde korrigering fundet ved \textit{linesearch}\cite{LineSearch}. Vi sikrer os at likelihoodfunktion altid befinder sig på en konkav mængde ved at tjekke om Alberts sætning er opfyldt før hver iteration. Standardfejlene på parametrene approksimeres med den inverse observation og fordelingen af styrkerne approksimeres med delta-metoden.
+\subsection{Hypotesetest}
 I dette afsnit viser vi, hvordan vi evaluerer vores model ud fra et givent datasæt i praksis, hvor det er antaget at det valgte datasæt er komplet, repræsentativt og stort. \par
 På trods af at dataet er valgt ud fra forventningen om, at de beskrivende variable afspejler de observerede udfald, er dette ikke altid gældende. Til at teste, hvorvidt variablene beskriver de observerede udfald udføre vi en kvotienttest, med nulhypotesen:\\
 $H_0: \hat{\beta} = 0$\\
@@ -452,8 +476,8 @@ Derudover er det nyttigt at kigge på residualerne, for at tjekke om der er en s
 I dette afsnit viser vi hvordan vi anvender Rao-Kupper modellen i praksis. Vi stiller modellen op på to forskellige måder og tester dem begge i at rangere fodboldhold i den danske Superliga for en sæson. 
 \subsection{Implementering af modellen}
 Når det kommer til implementering af Rao-Kupper, er det først og fremmest vigtigt at afklare hvad formålet med modelleringen er. Vi har valgt at stille modellen op på to forskellige måder. Den første er modellen som Rao og Kupper (1967)\cite{RaoKupper} præsenterer den, hvor kovariaterne er faste over tid. I vores eksempel med fodbold betyder det, at holdenes styrker er faste over tid, så sandsynligheden for at hold $i$ vinder over hold $j$ er den samme for et hvilket som helst tidspunkt.
-Den anden er en dynamisk version af modellen, hvor kovariaterne ændrer sig over tid. Dermed ændrer styrkerne og således sandsynlighederne sig fra kamp til kamp. Vores forventning er, at når vi ønsker at rangere en række fodboldhold, eller eventuelt en række produkter for en given periode. Vil det være optimalt at benytte modellen som Rao og Kupper præsenterer den, men når vi ønsker at forudsige udfaldet af en fodboldkamp, eller en forbrugers foretrukne valg ved sammenligning af to produkter på et givent tidspunkt, vil der være en fordel i at bruge den dynamiske model. Det skyldes, at vi i den dynamiske model med kovariater der ændrer sig over tid, har mulighed for at inkludere kamp/tidspunkts specifikke variable, som eksempelvis hjemmebanefordel eller vejr. Samt fitte vores model, således at en kamp på et givent tidspunkt kun bliver beskrevet af observationer fra tidligere kampe - dvs. at udfaldet af en fodboldkamp ikke bliver beskrevet af kovariater fra kampen selv.
-I vores eksempel med fodbold vil et tidspunkt være en spillerunde. En fodboldsæson bliver delt op i spillerunder, hvor hvert hold spiller én kamp i hver spillerunde. For at skelne mellem de to Rao-Kupper modeller vil vi fremover betegne modellen med kovariater der er faste, som \textit{Rao-Kupper} og modellen med kovariater der ændrer sig over tid som \textit{den dynamiske model}. Dette er udelukkende for at skelne mellem de to, og bestemt ikke fordi \textit{den dynamiske model} ikke er en Rao-Kupper model.
+Den anden er en dynamisk version af modellen, hvor kovariaterne ændrer sig over tid. Dermed ændrer styrkerne og således sandsynlighederne sig fra kamp til kamp. Vores forventning er, at når vi ønsker at rangere en række fodboldhold, eller eventuelt en række produkter for en given periode, vil det være optimalt at benytte modellen som Rao og Kupper præsenterer den. Men når vi ønsker at forudsige udfaldet af en fodboldkamp, eller en forbrugers foretrukne valg ved sammenligning af to produkter på et givent tidspunkt, vil der være en fordel i at bruge den dynamiske model. Det skyldes, at vi i den dynamiske model med kovariater der ændrer sig over tid, har mulighed for at inkludere kamp/tidspunkts specifikke variable, som eksempelvis hjemmebanefordel eller vejr. Samt fitte vores model, således at en kamp på et givent tidspunkt kun bliver beskrevet af observationer fra tidligere kampe - dvs. at udfaldet af en fodboldkamp ikke bliver beskrevet af kovariater fra kampen selv. Det vil sige, at vi ser den dynamiske model som en prædiktionsmodel.
+I vores eksempel med fodbold vil et tidspunkt være en spillerunde. En fodboldsæson bliver delt op i spillerunder, hvor hvert hold spiller én kamp i hver spillerunde. For at skelne mellem de to Rao-Kupper modeller vil vi fremover betegne modellen med kovariater der er faste, som \textit{Rao-Kupper} og modellen med kovariater der ændrer sig over tid som \textit{den dynamiske model}. Dette er udelukkende for at skelne mellem de to, og bestemt ikke fordi \textit{den dynamiske model} ikke er en Rao-Kupper model. De er blot to forskellige måder at fitte en Rao-Kupper model på. 
 \subsubsection{Model I - Rao Kupper}
 I Rao-Kupper foregår rangeringen for en given periode, hvor designmatricen er baseret på observationer for samtlige kampe der er spillet i perioden, og er fast over tid. Det betyder at den forventede sandsynlighed for at hold $i$ vinder over hold $j$, i en hvilken som helst spillerunde bliver:
 \begin{align}
@@ -508,7 +532,7 @@ Parametrene $\hat{\beta}$ og $\hat{\theta}$ er også faste over tid, og estimere
 \end{algorithm}
 \par
 \subsubsection{Model II - Den Dynamiske Model}
-Ændringen til den dynamiske model er som nævnt, at kovariaterne bliver kampspecifikke og dermed ændrer sig for hver runde. En kamp i runden $t$, bliver som nævnt beskrevet af observationer fra runder før $t$, så $t>1$ altid. Under tesen om, at et holds styrke i en given runde i højere grad afhænger af de runder, der er spillet kort forinden - fremfor samtlige runder spillet før den givne runde - tilføjer vi en tuning størrelse $\alpha$. $\alpha$ bestemmer dermed hvor mange runder før $t$ designmatricen indeholder observationer fra. Som nævnt, åbner den dynamiske model også op for implementering af kampspecifikke kovariater som hjemmebanefordel; disse opdateres i forhold til runden $t$. Den nye designmatrice bliver:
+Ændringen til den dynamiske model er som nævnt, at kovariaterne bliver kampspecifikke og dermed ændrer sig for hver runde. En kamp i runden $t$, bliver som nævnt beskrevet af observationer fra runder før $t$, så $t>1$. Under tesen om, at et holds styrke i en given runde i højere grad afhænger af de runder, der er spillet kort forinden - fremfor samtlige runder spillet før den givne runde - tilføjer vi en tuning størrelse $\alpha$. $\alpha$ bestemmer dermed hvor mange runder før $t$ designmatricen indeholder observationer fra. Som nævnt, åbner den dynamiske model også op for implementering af kampspecifikke kovariater som hjemmebanefordel; disse opdateres i forhold til runden $t$. Den nye designmatrice bliver:
 \begin{align*}
 \textbf{X}(t,\alpha)=\begin{bmatrix}
 \textbf{X}_{\text{Kategorisk}}(t)\\
@@ -569,8 +593,8 @@ Til sammenligningen af de to modeller, skal det bemærkes at de estimerede param
 \caption{Newton-Raphson for Dynamisk Model}\label{alg:Dynamisk}
 \end{algorithm}
 \subsection{Data}
-Vi har valgt at teste modellen på historisk data fra den danske 3F Superliga. Superligaen er siden 2016 bestående af 14 hold, hvoraf der i hver sæson rykker ét hold op fra 1. Divison og ét hold ned til 1. Divison. Efter sæsonafslutningen i 2016 blev Superligaens opbygning ændret, og de deler derfor ligaen op i to grupper i slutspillet, hvilket medfører at alle hold ikke spiller mod hinanden lige mange gange. Det i sig selv er ikke et problem for modellen, men eftersom hvert hold kun spiller 2-3 kampe mod hinanden, giver det mest mening at vælge en sæson før 2016, for at få det bedste sammenligningsgrundlag. Derfor har vi valgt at tage udgangspunkt i sæsonen 2015-2016, hvor der er 12 hold i ligaen og alle spiller det samme antal kampe mod hinanden; 198 kampe i alt. Der er i alt 33 spillerunder, hvor hvert hold spiller én kamp per runde. Dataen er leveret af \textit{superstats.dk}, og Tabel \ref{tab:Kovariater} viser de kovariater vi bruger til at estimere parameterkoefficienterne.
-\begin{table}[ht]
+Vi har valgt at teste modellen på historisk data fra den danske 3F Superliga. Superligaen er siden 2016 bestående af 14 hold, hvoraf der i hver sæson rykker ét hold op fra 1. Divison og ét hold ned til 1. Divison. Efter sæsonafslutningen i 2016 blev Superligaens opbygning ændret, og de deler derfor ligaen op i to grupper i slutspillet, hvilket medfører at alle hold ikke spiller mod hinanden lige mange gange. Det i sig selv er ikke et problem for modellen, men eftersom hvert hold kun spiller 2-3 kampe mod hinanden, giver det mest mening at vælge en sæson før 2016, for at få det bedste sammenligningsgrundlag. Derfor har vi valgt at tage udgangspunkt i sæsonen 2015-2016, hvor der er 12 hold i ligaen og alle spiller 3 kampe mod hinanden; 198 kampe i alt. Der er i alt 33 spillerunder, hvor hvert hold spiller én kamp per runde. Der er derfor forskel i hvor mange hjemmebane kampe hvert hold har. Dataen er leveret af \textit{superstats.dk} \cite{Superstats}, og Tabel \ref{tab:Kovariater} viser de kovariater vi bruger til at estimere parameterkoefficienterne.\newline
+\begin{table}[t!]
 \centering
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{|l|lrr|}
@@ -593,7 +617,19 @@ Frispark & Numerisk & 3 & 21 \\
 \end{tabular}
 \end{adjustbox}
 \caption{\label{tab:Kovariater}\textit{Kovariater med mindste og største værdi for observationerne i Superligaen 2015-2016}}
-\end{table}
+\end{table}\\
+HjemmeBane: 1 for hjemmebaneholdet, 0 for udebaneholdet.\\
+SejrStreak: Antal kampe vundet i træk.\\
+FifaRating: Ratings udstedt af Fifa.\\
+Hjørne: Antal sparket hjørnespark.\\
+Offside: Antal offside begået.\\
+MålScoret: Antal mål scoret. \\
+MålLukketInd: Antal mål lukket ind.\\
+Tilskuere: Total antal tilskuere, samlet for begge hold.\\
+Boldbesiddelse: Boldbesiddelse i procent.\\
+Skud: Antal skud på mål\\
+SkudIndenfor: Antal skud indenfor målrammen\\
+Frispark: Antal frispark et hold har sparket\\
 \\ Vi vælger at standardisere vores designmatrice for at sammenligne resultater med dem vi får i afsnit 4, hvor vi udvælger parametre. Standardisering gør det muligt, at sammenligne kovariaternes størrelser på tværs af hinanden, hvilket er nødvendigt i afsnit 4. Dette gør vi ved at skalere hver søjle (variabel), så middelværdien er lig 0 og variansen er lig 1. Dermed bliver det $i$'te element i den $k$'te søjle i designmatricen opskrevet ved
 \begin{align*}
     Standard(x_{ik}) &=\frac{x_{ik}-\Bar{x}_k}{\sigma_k},\\
@@ -606,32 +642,33 @@ Et eksempel på en designmatrice for den dynamiske model bliver vist i Tabel (\r
 \begin{table}[ht]
 \centering
 \begin{adjustbox}{max width=\textwidth}
+\centering
 \begin{tabular}{|r|rrrrrrrrrrrr|}
   \hline
- & AAB & AGF & BIF & EFB & FCK & FCM & FCN & HOB & OB & RFC & SE & VFF \\ 
+ & HjemmeBane & SejrStreak & FifaRating & Hjørne & Offside & MålScoret & MålLukketInd & Tilskuere & Boldbesiddelse & Skud & SkudIndenfor & Frispark \\ 
   \hline
-HjemmeBane & 0.00 & 0.00 & 1.00 & 0.00 & 1.00 & 1.00 & 0.00 & 0.00 & 1.00 & 1.00 & 0.00 & 1.00 \\ 
-  streak & 0.00 & 1.00 & 1.00 & 0.00 & 1.00 & 0.00 & 1.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\ 
-  FifaRating & 66.00 & 65.00 & 67.00 & 65.00 & 71.00 & 69.00 & 64.00 & 64.00 & 64.00 & 66.00 & 65.00 & 63.00 \\ 
-  GnsHjorne & 5.09 & 5.00 & 5.56 & 4.41 & 6.41 & 4.56 & 3.91 & 3.00 & 4.59 & 5.25 & 4.22 & 5.25 \\ 
-  GnsOffside & 1.56 & 2.16 & 1.81 & 1.97 & 2.56 & 2.50 & 1.81 & 2.75 & 1.88 & 2.69 & 1.66 & 2.22 \\ 
-  Mal & 54.00 & 46.00 & 42.00 & 37.00 & 60.00 & 53.00 & 34.00 & 26.00 & 47.00 & 42.00 & 54.00 & 33.00 \\ 
-  MalInd & 41.00 & 47.00 & 35.00 & 61.00 & 27.00 & 32.00 & 47.00 & 69.00 & 50.00 & 42.00 & 35.00 & 42.00 \\ 
-  GnsTilskuer & 7014.25 & 7146.66 & 10637.56 & 6281.66 & 12660.81 & 7255.59 & 5042.12 & 4669.56 & 6765.59 & 6353.34 & 5899.75 & 5366.78 \\ 
-  GnsBoldBes & 54.34 & 50.97 & 51.91 & 48.75 & 53.19 & 50.69 & 52.09 & 43.25 & 51.78 & 51.88 & 44.47 & 46.69 \\ 
-  GnsSkud & 13.03 & 13.34 & 14.31 & 12.22 & 14.56 & 13.53 & 10.75 & 9.84 & 11.25 & 13.66 & 12.12 & 13.56 \\ 
-  GnsSkudIndenfor & 5.09 & 4.72 & 4.91 & 3.88 & 5.12 & 4.72 & 4.19 & 3.28 & 4.75 & 4.56 & 4.44 & 4.09 \\ 
-  GnsFrispark & 8.03 & 11.88 & 12.31 & 10.69 & 11.31 & 12.00 & 12.56 & 14.00 & 9.62 & 10.84 & 10.66 & 11.50 \\ 
+AaB & -1.00 & -0.71 & 0.11 & 0.39 & -1.44 & 1.02 & -0.26 & -0.03 & 1.30 & 0.25 & 1.19 & -2.24 \\ 
+  AGF & -1.00 & 1.41 & -0.34 & 0.28 & 0.07 & 0.20 & 0.26 & 0.02 & 0.29 & 0.47 & 0.46 & 0.41 \\ 
+  BIF & 1.00 & 1.41 & 0.57 & 0.95 & -0.81 & -0.20 & -0.78 & 1.59 & 0.57 & 1.16 & 0.83 & 0.71 \\ 
+  EFB & -1.00 & -0.71 & -0.34 & -0.44 & -0.41 & -0.71 & 1.48 & -0.36 & -0.37 & -0.33 & -1.17 & -0.41 \\ 
+  FCK & 1.00 & 1.41 & 2.38 & 1.96 & 1.10 & 1.63 & -1.48 & 2.50 & 0.95 & 1.34 & 1.25 & 0.02 \\ 
+  FCM & 1.00 & -0.71 & 1.48 & -0.25 & 0.94 & 0.92 & -1.05 & 0.07 & 0.21 & 0.61 & 0.46 & 0.49 \\ 
+  FCN & -1.00 & 1.41 & -0.79 & -1.04 & -0.81 & -1.02 & 0.26 & -0.92 & 0.63 & -1.38 & -0.56 & 0.88 \\ 
+  HOB & -1.00 & -0.71 & -0.79 & -2.13 & 1.57 & -1.84 & 2.18 & -1.09 & -2.02 & -2.03 & -2.32 & 1.87 \\ 
+  OB & 1.00 & -0.71 & -0.79 & -0.21 & -0.65 & 0.31 & 0.52 & -0.15 & 0.53 & -1.02 & 0.52 & -1.14 \\ 
+  RFC & 1.00 & -0.71 & 0.11 & 0.58 & 1.41 & -0.20 & -0.17 & -0.33 & 0.56 & 0.70 & 0.16 & -0.30 \\ 
+  SDR & -1.00 & -0.71 & -0.34 & -0.66 & -1.20 & 1.02 & -0.78 & -0.54 & -1.66 & -0.40 & -0.08 & -0.43 \\ 
+  VFF & 1.00 & -0.71 & -1.25 & 0.58 & 0.22 & -1.12 & -0.17 & -0.78 & -0.99 & 0.63 & -0.75 & 0.15 \\ 
    \hline
 \end{tabular}
 \end{adjustbox}
-\caption{\label{tab:Designmatrice}\textit{Designmatrice for sidste runde i sæsonen, med $\alpha = 33$}}
+\caption{\label{tab:Designmatrice}\textit{Standardiseret designmatrice for sidste runde i sæsonen, med $\alpha = 33$}}
 \end{table}
 \\Kontingentstabellen for sejrene bliver opstillet som i Tabel \ref{tab:Kontingentstabel}, hvor den er opstillet med rækkerne som værende de vindende hold og søjlerne som værende det tabende hold.
 \begin{table}[ht]
 \centering
 \begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{|rrrrrrrrrrrrr|}
+\begin{tabular}{|l|rrrrrrrrrrrr|}
   \hline
  & AAB & AGF & BIF & EFB & FCK & FCM & FCN & HOB & OB & RFC & SE & VFF \\ 
   \hline
@@ -650,9 +687,9 @@ AAB &   0 &   1 &   3 &   1 &   0 &   0 &   1 &   3 &   1 &   1 &   2 &   2 \\
    \hline
 \end{tabular}
 \end{adjustbox}
-\caption{\label{tab:Kontingentstabel}\textit{Kontingentstabellen for den statiske model for sidste runde i sæsonen}}
+\caption{\label{tab:Kontingentstabel}\textit{Kontingentstabellen for Rao-Kupper tilhørende sidste runde i sæsonen}}
 \end{table}
-\\Vi har i \textit{R} implementeret Newton-Raphson algoritmen, hvor der i hver iteration sikres at betingelserne fra \textbf{Alberts sætning} er overholdt. Hvis en af betingelserne bliver brudt, afbrydes algoritmen og parametrene fra den sidste iteration returneres. Den dynamiske model er estimeret fra 3. runde af, for at sikre at der i hver iteration er mindst én observation for hvert hold på hjemme- og udebane. Vi er tilfredse med præcisionen på $\epsilon = 10^{-6}$, som betegner den største absolutte ændring i parametrene før algoritmen stoppes.
+\\Vi har i \textit{R} implementeret Newton-Raphson algoritmen, hvor der i hver iteration sikres at betingelserne fra Alberts sætning er overholdt. Hvis en af betingelserne bliver brudt, afbrydes algoritmen og parametrene fra den sidste iteration returneres. Den dynamiske model er estimeret fra 3. runde af, for at sikre at der i hver iteration er mindst én observation for hvert hold på hjemme- og udebane. Vi er tilfredse med præcisionen på $\epsilon = 10^{-6}$, som betegner den største absolutte ændring i parametrene før algoritmen stoppes.
 \par For at udvælge tuningstørrelsen $\alpha$ sammenligninger vi likelihoodværdier for $\alpha \in \{1,...,33\}$. Resultatet af testen ses i Figur (\ref{fig:AlphaPlot}), og viser at $\alpha=3$, giver den største likelihood. Likelihoodværdien med $\alpha=13$ er meget tæt på værdien for $\alpha=3$, og må forventes at give nogle mere gennemsnitlige styrker. En lav $\alpha$ værdi medfører at holdenes styrker varierer mere fra kamp til kamp, end ved en høj $\alpha$. Det tyder på, at holdenes præstationer har været svingene i sæsonen 2015-2016. Vi vælger at forsætte med $\alpha=3$, som maksimaliserer vores likelihoodfunktion,
 \begin{figure}[htb!]
 \begin{center}
@@ -671,25 +708,25 @@ AAB &   0 &   1 &   3 &   1 &   0 &   0 &   1 &   3 &   1 &   1 &   2 &   2 \\
 \hline
 Parameter & Estimat & SE &2.5\% &97.5\% & Estimat & SE &2.5\% &97.5\%\\
   \hline
-    $\hat{\text{HjemmebaneFordel}}$ & -      & -     &      &            & 0.156 & 0.072  &0.014 & 0.298  \\
-    $\hat{\text{SejrStreak}}$       & -      & -     &       &           & -0.195 & 0.107 &-0.404 & 0.014 \\
-    $\hat{\text{FifaRating}}$       & -0.316 & 0.707 &-1.702 &1.069      & 0.453 & 0.229  &0.004 & 0.902 \\
-    $\hat{\text{Hjørne}}$           & -0.437 & 0.980 &-2.359 &1.484      & 0.305 & 0.293  &-0.269 &0.879\\
-    $\hat{\text{Offside}}$          &  0.126 & 0.312 &-0.485 &0.738      & -0.079 & 0.142 &-0.358 &0.200 \\
-    $\hat{\text{MålScoret}}$        &  0.259 & 0.480 &-0.682 &1.200      & 0.259 & 0.222  &-0.177 &0.695    \\
-    $\hat{\text{MålLukketInd}}$     & -0.683 & 0.541 &-1.744 &0.378      & 0.106 & 0.164  &-0.215 & 0.428\\
-    $\hat{\text{Tilskuere}}$        &  0.453 & 0.731 &-0.949&1.885       & -0.147 & 0.207 &-0.552 & 0.259\\
-    $\hat{\text{Boldbesiddelse}}$   &  0.210 & 0.488 &-0.746 &1.166      & -0.156 & 0.154 &-0.458 & 0.146\\
-    $\hat{\text{Skud}}$             &  0.160 & 0.540 &-0.899 &1.218      & -0.011 & 0.259 &-0.519 & 0.497\\
-    $\hat{\text{SkudIndenfor}}$     & -0.395 & 0.770 &-1.904 &1.115      & -0.007 & 0.233 &-0.463 & 0.449\\
-    $\hat{\text{Frispark}}$         & -0.214 & 0.418 &-1.033 &0.604      & -0.052 & 0.166 &-0.274 & 0.378\\
-    $\hat{\theta}$                  & 1.667  & 0.121 &1.429  &1.904      & 1.657 & 0.122  & 1.419 & 1.896\\
+    $\hat{\text{HjemmebaneFordel}}$ & -      & -     &      &            & 0.155 & 0.073  &0.012 & 0.298  \\
+    $\hat{\text{SejrStreak}}$       & -      & -     &       &           & -0.152 & 0.122 &-0.392 & 0.088 \\
+    $\hat{\text{FifaRating}}$       & -0.316 & 0.707 &-1.702 &1.069      & 0.392 & 0.152  &0.095 & 0.690 \\
+    $\hat{\text{Hjørne}}$           & -0.437 & 0.980 &-2.359 &1.484      & 0.088 & 0.132  &-0.171 &0.347\\
+    $\hat{\text{Offside}}$          &  0.126 & 0.312 &-0.485 &0.738      & -0.045 & 0.101 &-0.242 &0.152 \\
+    $\hat{\text{MålScoret}}$        &  0.259 & 0.480 &-0.682 &1.200      & 0.112 & 0.138  &-0.159 &0.383\\
+    $\hat{\text{MålLukketInd}}$     & -0.683 & 0.541 &-1.744 &0.378      & 0.104 & 0.117  &-0.125 & 0.333\\
+    $\hat{\text{Tilskuere}}$        &  0.453 & 0.731 &-0.949&1.885       & 0.097 & 0.127 &-0.151 & 0.346\\
+    $\hat{\text{Boldbesiddelse}}$   &  0.210 & 0.488 &-0.746 &1.166      & -0.042 & 0.136 &-0.309 & 0.225\\
+    $\hat{\text{Skud}}$             &  0.160 & 0.540 &-0.899 &1.218      & 0.046 & 0.150 &-0.249 & 0.340\\
+    $\hat{\text{SkudIndenfor}}$     & -0.395 & 0.770 &-1.904 &1.115      & -0.108 & 0.138 &-0.378 & 0.163\\
+    $\hat{\text{Frispark}}$         & -0.214 & 0.418 &-1.033 &0.604      & -0.238 & 0.101 &-0.436 & -0.040\\
+    $\hat{\theta}$                  & 1.667  & 0.121 &1.429  &1.904      & 1.663 & 0.123  & 1.422 & 1.904\\
    \hline
 \end{tabular}
 \end{adjustbox}
 \caption{\label{tab:Parameterestimater}\textit{$\hat{\theta}$- og $\hat{\beta}$-koefficienter for sæson 2015 i superligaen, med Rao-Kupper til venstre, og den dynamiske model til højre}}
 \end{table}
-\\Vi ser i Tabel (\ref{tab:Parameterestimater}), at alle $\hat{\beta}$'erne i Rao-Kupper har store standardfejl og ikke er signifikante med et signifikansniveau på 5\%. $\hat{\theta}$ er signifikant, hvilket den er per definition, eftersom vi har uafgjorte kampe. I den dynamiske model, ser det en smule bedre ud, her er $\hat{HjemmebaneFordel}$, $\hat{FifaRating}$ og $\hat{\theta}$ signifikante med et signifikansniveau på 5\%. For at sikre os at $\hat{\beta}$ i de to modeller samlet set er signifikante, udfører vi en kvotienttest med nulhypotesen:\\
+\\Vi ser i Tabel (\ref{tab:Parameterestimater}), at alle $\hat{\beta}$'erne i Rao-Kupper har store standardfejl og ikke er signifikante med et signifikansniveau på 5\%. $\hat{\theta}$ er signifikant, hvilket den er per definition, eftersom vi har uafgjorte kampe. I den dynamiske model, ser det en smule bedre ud, her er $\hat{HjemmebaneFordel}$, $\hat{FifaRating}$, $\hat{frispark}$ og $\hat{\theta}$ signifikante med et signifikansniveau på 5\%. For at sikre os at $\hat{\beta}$ i de to modeller samlet set er signifikante, udfører vi en kvotienttest med nulhypotesen:\\
 $H_0$: $\beta_1=\beta_2=...=\beta_{12} = 0$.\\
 Teststørrelserne bliver dermed for henholdsvis Rao-Kupper og den dynamiske model:\\
 \begin{align*}
@@ -697,32 +734,32 @@ Teststørrelserne bliver dermed for henholdsvis Rao-Kupper og den dynamiske mode
     -2\text{log}(Q_{dyn})&=-2\Big{(}\ell_{dyn} (\beta_{H_0},\hat{\hat{\theta}})-\ell_{dyn} (\hat{\beta},\hat{\theta})\Big{)}=-2(-198.033+181.078)=33.910
 \end{align*}
 Her er vores teststørrelse for $H_0$, ved store stikprøver, approksimativt $\chi^2_{10}$ fordelt for Rao-Kupper og $\chi^2_{12}$ fordelt for den dynamiske. De tilhørende $p$-værdier for Rao-Kupper og den dynamiske model er henholdsvis $0.00001$ og $0.0007$, hvorfor vi afviser nulhypotesen om, at $\beta$'erne er uden betydning for modellen. Vi konkluderer dermed, at der ikke er noget belæg for at fjerne $\beta$-parametrene helt fra modellen.
-\\\\I Tabel \ref{tab:Styrkeestimater} sammenligner vi de to modellers rangering af holdene, og derudfra ser vi, at der er betydelig forskel på de to måder at anvende modellen på. Styrkerne for holdene er udregnet relativt til Hobro. Som forventet, kommer Rao-Kupper tættere på den faktiske rangering af holdene end den dynamiske model gør. Styrken for et hold i den dynamiske model, er beregnet som et gennemsnit af holdets styrke for alle runderne. De estimerede point, er udregnet ud fra de estimerede sandsynligheder tilhørende hver af kampene, hvor pointene tildeles ved: $3 \cdot p_{i \cdot ij}$ point til hold \textit{i}, $3\cdot p_{j \cdot ij}$ point til hold \textit{j} og $1\cdot p_{0 \cdot ij}$ point til begge hold. Bemærk at summen af de estimerede point ikke er lig summen af de observerede point, dette skyldes, at der er en forskel i antallet af estimerede uafgjorte kampe i forhold til de observerede uafgjorte kampe. Den sande sum af point er 552, hvor Rao-Kupper estimerer 551.947 og den dynamiske estimere 549.426.
+\\\\I Tabel \ref{tab:Styrkeestimater} sammenligner vi de to modellers rangering af holdene, og derudfra ser vi, at der er betydelig forskel på de to måder at anvende modellen på. Styrkerne for holdene er udregnet relativt til Hobro. Som forventet, kommer Rao-Kupper tættere på den faktiske rangering af holdene end den dynamiske model gør. Styrken for et hold i den dynamiske model, er beregnet som et gennemsnit af holdets styrke for alle runderne. De estimerede point, er udregnet ud fra de estimerede sandsynligheder tilhørende hver af kampene, hvor pointene tildeles ved: $3 \cdot p_{i \cdot ij}$ point til hold \textit{i}, $3\cdot p_{j \cdot ij}$ point til hold \textit{j} og $1\cdot p_{0 \cdot ij}$ point til begge hold. Bemærk at summen af de estimerede point ikke er lig summen af de observerede point, dette skyldes, at der er en forskel i antallet af estimerede uafgjorte kampe i forhold til de observerede uafgjorte kampe. Den sande sum af point er 552, hvor Rao-Kupper estimerer 551.947 og den dynamiske estimere 549.441. Det ses yderligere i Tabel \ref{tab:Styrkeestimater}, at for den dynamiske model, er holdenes rangering ud fra de gennemsnitlige styrker ikke den samme, som holdenes rangering ud fra point. Dette skyldes at der er en øvre grænse, for hvor mange point et hold kan få tildelt i en kamp, men der er ikke en øvre grænse for hvor stor styrken for et hold kan blive i en kamp. Denne øvre grænse vil altså kunne påvirke den gennemsnitlige styrke for et hold mere, end den vil kunne påvirke holdets antal point. 
 \begin{table}[htb!]
 \centering
 \begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{|hh|hhhh|hhhh|}
+\begin{tabular}{|lr|rrrr|rrrr|}
 \hline
-\multicolumn{2}{|h|}{} & \multicolumn{4}{h|}{Rao-Kupper} & \multicolumn{4}{h|}{Dynamisk Model} \\
+\multicolumn{2}{|c|}{} & \multicolumn{4}{c|}{Rao-Kupper} & \multicolumn{4}{c|}{Dynamisk Model} \\
 \hline
 Hold & Point & Styrke & SE & Estimeret Point & Rangering & Styrke & SE & Estimeret Point & Rangering \\
   \hline
-    FCK & 71 & 11.223 & 5.722 & 71.165 & 1  & 5.945 & 2.694 & 67.082 & 1 \\
-    SJE & 62 & 7.048  & 3.463 & 61.029 & 2  & 2.617 & 1.085 & 49.250 & 5 \\
-    FCM & 59 & 6.233  & 2.816 & 58.191 & 3  & 3.723 & 1.625 & 58.619 & 2 \\
-    BIF & 54 & 5.075  & 2.432 & 53.367 & 4  & 2.987 & 0.880 & 52.143 & 3 \\
-    AAB & 50 & 4.674  & 2.284 & 51.418 & 5  & 2.947 & 1.396 & 51.259 & 4 \\
-    RFC & 47 & 4.032  & 1.901 & 47.923 & 6  & 2.522 & 0.870 & 49.119 & 6 \\
-    OB  & 46 & 3.163  & 1.287 & 42.229 & 8  & 1.654 & 0.619 & 37.709 & 9 \\
-    VFF & 40 & 2.880  & 1.335 & 40.068 & 9  & 1.484 & 0.608 & 35.285 & 10 \\
-    FCN & 38 & 2.423  & 1.154 & 36.171 & 10 & 1.142 & 0.460 & 30.987 & 11 \\
-    AGF & 37 & 3.173  & 1.500 & 42.299 & 7  & 2.057 & 0.739 & 42.903 & 8 \\
-    EFB & 30 & 1.744  & 0.071 & 29.161 & 11 & 2.410 & 0.880 & 47.775 & 7 \\
-    HOB & 18 & 1.000  & 0.000 & 18.926 & 12 & 1.000 & 0.000 & 27.293 & 12 \\
+    FCK & 71 & 11.223 & 5.722 & 71.165 & 1  & 5.757 & 2.294 & 70.125 & 1 \\
+    SJE & 62 & 7.048  & 3.463 & 61.029 & 2  & 1.717 & 0.437 & 43.156 & 8 \\
+    FCM & 59 & 6.233  & 2.816 & 58.191 & 3  & 3.043 & 0.962 & 56.779 & 2 \\
+    BIF & 54 & 5.075  & 2.432 & 53.367 & 4  & 2.281 & 0.698 & 49.854 & 4 \\
+    AAB & 50 & 4.674  & 2.284 & 51.418 & 5  & 2.768 & 1.064 & 52.631 & 3 \\
+    RFC & 47 & 4.032  & 1.901 & 47.923 & 6  & 1.999 & 0.516 & 47.115 & 6 \\
+    OB  & 46 & 3.163  & 1.287 & 42.229 & 8  & 1.746 & 0.526 & 40.878 & 7 \\
+    VFF & 40 & 2.880  & 1.335 & 40.068 & 9  & 1.173 & 0.290 & 33.485 & 10 \\
+    FCN & 38 & 2.423  & 1.154 & 36.171 & 10 & 1.151 & 0.315 & 32.848 & 11 \\
+    AGF & 37 & 3.173  & 1.500 & 42.299 & 7  & 1.662 & 0.407 & 40.474 & 9 \\
+    EFB & 30 & 1.744  & 0.071 & 29.161 & 11 & 2.012 & 0.442 & 47.995 & 5 \\
+    HOB & 18 & 1.000  & 0.000 & 18.926 & 12 & 1.000 & 0.000 & 34.102 & 12 \\
    \hline   
 \end{tabular} 
 \end{adjustbox}
-\caption{\label{tab:Styrkeestimater}Rangering af holdene i forhold til deres styrker udregnet relativt til Hobro, samt deres forventede antal point ved slutningen af sæsonen}
+\caption{\label{tab:Styrkeestimater}\textit{Rangering af holdene i forhold til deres styrker, samt deres forventede antal point ved slutningen af sæsonen. Styrkerne er udregnet relativt til Hobro}}
 \end{table}
 \\Det viser sig, at der er markant flere hjemmebanesejre end udebanesejre. Figur \ref{fig:boxplot} viser boxplot af estimerede sandssynligheder mod observerede udfald. Vi ser, at den dynamiske model \ref{fig:boxplotD} estimerer fordelingen af hjemmebanesejre, udebanesejre og uafgjorte kampe bedre i forhold til de observerede udfald af kampene, end Rao-Kupper \ref{fig:boxplotS}. De stiblede linjer (rød, blå, grøn) viser de observerede middelværdier for hhv (hjemmesejr, udesejr, uafgjort).
 \begin{table}[htb!]
@@ -738,14 +775,14 @@ Dynamisk Rao Kupper & 0.463 & 0.322 & 0.215\\
    \hline   
 \end{tabular} 
 \end{adjustbox}
-\caption{\label{tab:Styrkeestimater}\textit{Procentvise observerede og estimerede udfald for Rao Kupper modellen samt den Dynamiske Rao Kupper Model}}
+\caption{\label{tab:HjemmeUdeProcenter}\textit{Procentvise observerede og estimerede udfald for Rao Kupper modellen samt den Dynamiske Rao Kupper Model}}
 \end{table}\\
 At den dynamiske model estimerer den observerede fordeling af (hjemmesejr, udesejr, uafgjort) bedre, skyldes at den dynamiske model tager højde for hjemmebanefordelen. At Rao-Kupper estimaterne for hjemmesejrer og udesejrer ikke er ens, skyldes at alle hold i sæsonen ikke spiller lige mange hjemme og udebanekampe. Det medfører at modellen vil estimere flere hjemmesejrer, hvis det er de hold med de største styrker, som spiller en ekstra hjemmebane kamp. 
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[b]{0.475\linewidth}
     \includegraphics[width=\linewidth]{EstSSHStatisk.png}
-    \caption{Statisk}
+    \caption{Rao Kupper}
     \label{fig:boxplotS}
   \end{subfigure}
   \begin{subfigure}[b]{0.475\linewidth}
@@ -758,7 +795,7 @@ At den dynamiske model estimerer den observerede fordeling af (hjemmesejr, udese
 \end{figure}
  \\
 \newpage 
-For at se nærmere på de estimerede sandsynligheder, kigger vi på deres respons-residualer mod fittede værdier for de tre udfald; dette ses i Figur \ref{fig:residualplot}. Den sorte linje viser middelværdien af residualerne, og den røde linje er en kerneudglatning. Båndbredderne er valgt ved at tage udgangspunkt i \textit{R}-funktionen {\fontfamily{qcr}\selectfont dpill}, og efterfølgende rettet til. Vi ser, at middelværdierne for den dynamiske model er tættere på 0 end de er for Rao-Kupper. Rao-Kupper har en middelværdi over 0 for hjemmesejr og under 0 for udesejr. Dette er en forventelig følge, da Rao-Kupper generelt vil overestimere sandsynligheden for udesejr og underestimere sandsynligheden for hjemmesejr. Der ser ikke ud til at danne sig noget klart mønster for de fittede værdier, dog er der noget støj ved halerne. Residualerne tilhørende de uafgjorte kampe er meget ens for de to modeller, hvilket også måtte forventes, da $\theta$ er meget ens for dem. Der er dog en lidt større spredning for uafgjort i de fittede værdier for den dynamiske model, hvilket skyldes forskellen i $\beta$'erne, og især implementeringen af hjemmebanefordelen. Det er generelt svært at sige noget konkret om disse residualer, eftersom vi har så få observationer i hver kategori. Derfor vælger vi heller ikke at fjerne nogle af de outliers der befinder sig i halerne.
+For at se nærmere på de estimerede sandsynligheder, kigger vi på deres respons-residualer mod fittede værdier for de tre udfald; dette ses i Figur \ref{fig:residualplot}. Den sorte linje viser middelværdien af residualerne, og den røde linje er en kerneudglatning. Båndbredderne er valgt ved at tage udgangspunkt i \textit{R}-funktionen {\fontfamily{qcr}\selectfont dpill}, og efterfølgende rettet til. Vi ser, at middelværdierne for den dynamiske model er tættere på 0 end de er for Rao-Kupper. Rao-Kupper har en middelværdi over 0 for hjemmesejr og under 0 for udesejr. Dette er en forventelig følge, da Rao-Kupper generelt vil overestimere sandsynligheden for udesejr og underestimere sandsynligheden for hjemmesejr. Idet den ikke inkorporerer nogen hjemmebaneparameter. Der ser ikke ud til at danne sig noget klart mønster for de fittede værdier, dog er der noget støj ved halerne. Residualerne tilhørende de uafgjorte kampe er meget ens for de to modeller, hvilket også måtte forventes, da $\theta$ er meget ens for dem. Der er dog en lidt større spredning for uafgjort i de fittede værdier for den dynamiske model, hvilket skyldes forskellen i $\beta$'erne, og især implementeringen af hjemmebanefordelen. Det er generelt svært at sige noget konkret om disse residualer, eftersom vi har så få observationer i hver kategori. Derfor vælger vi heller ikke at fjerne nogle af de outliers der befinder sig i halerne.
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[b]{0.425\linewidth}
@@ -795,7 +832,7 @@ For at se nærmere på de estimerede sandsynligheder, kigger vi på deres respon
   \label{fig:residualplot}
 \end{figure}
 \clearpage
-\section{Udvælgelse af parametre}
+\section{Lasso}
 I dette afsnit viser vi, hvordan vi ved brug af lassostraf ($l_1$ norm straf) udvælger de mest beskrivende parametre, og sætter deres koefficienter derefter. Formålet er, at forbedre vores models prædiktionsevne ved at mindske modellens forventede prædiktionsfejl, eller med andre ord maksimalisere likelihooden på noget fremmed data. Til sidst viser vi, hvordan vi implementerer lasso i vores algoritmer med udgangspunkt i den dynamiske model.\\\\
 \subsection{Tabsfunktioner}
 Når vi beregner prædiktionsfejl, kræver det, at vi noget har testdata som vi ikke har fitted vores model ud fra. Det vil sige, at vi fitter vores model på et træningsdatasæt, for derefter at teste den på et andet testdatasæt. Givet et datasæt med observationerne $\{1,...,N\}$, kalder vi træningsdatasættet for $n$ og testdatasættet for $q$; så $\{1,...,N\}\rightarrow\{1_n,...,N_n,1_q,...,N_q\}$ er en indeksering af observationerne i forhold til hvorvidt de bliver anvendt til at fitte vores model eller teste den. En metode til at måle modellens prædiktionsfejl på, er \textit{mean squarred prediction error} (MSPE). I MSPE udregnes den kvadrede prædiktionsfejl for hver af sandsynlighederne ($p_{i\cdot ij}, p_{j\cdot ij}, p_{0\cdot ij}$) individuelt, og MSPE for en kamp mellem hold $i$ og hold $j$ bliver summen af de kvadrede prædiktionsfejl for hver af de tre estimerede sandsynligheder. MSPE for at hold $i$ vinder over hold $j$ bliver:
@@ -830,8 +867,8 @@ En anden hyppigt anvendt tabsfunktion i klassificeringsproblemer er \textit{logi
 &=-\log\prod_{t\in q}\prod_{i<j}\hat{p}_{i\cdot ij}(t)^{y_{i\cdot ij}(t)}\hat{p}_{j\cdot ij}(t)^{y_{j\cdot ij}(t)}\hat{p}_{0\cdot ij}(t)^{y_{0\cdot ij}(t)}\\
 &=-\sum_{t\in q}\sum_{i<j}\Big{(}y_{i\cdot ij}(t)\log\big{(}\hat{p}_{i\cdot ij}(t)\big{)}+y_{j\cdot ij}(t)\log\big{(}\hat{p}_{j\cdot ij}(t)\big{)}+y_{0\cdot ij}(t)\log\big{(}\hat{p}_{0\cdot ij}(t)\big{)}\Big{)}.
 \end{align*}
-\subsection{Lasso}
-Indtil videre har vi anvendt alle vores forklarende variable, til at beskrive de forskellige fodboldholds styrker. Der er altså en risiko for, at vi overfitter vores model med overflødige variable, som enten beskriver; den samme varians, beskriver den dårligt, eller slet ikke beskriver den. I dette afsnit vil vi tage udgangspunkt i princippet \textit{"less is more"}, og forsøge at indskærpe modellen, så de bedste variable vægtes mest og de dårligere enten vægtes mindre eller fjernes helt. Robert Tibshirani (1996)\cite{RobertTibshirani} foreslår en metode kaldet lasso \textit{(least absolute shrinkage and selection operator)} til at identificere, hvor godt de forskellige parametre beskriver udfaldene og justerer deres koefficienter derefter. Lasso-optimeringsproblemet tager som tidligere udgangspunkt i at maksimalisere likelihooden, men nu under en bibetingelse:
+\subsection{Lasso-metoden}
+Indtil videre har vi anvendt alle vores forklarende variable, til at beskrive de forskellige fodboldholds styrker. Der er altså en risiko for, at vi overfitter vores model med overflødige variable, som enten beskriver; den samme varians, beskriver den dårligt, eller slet ikke beskriver den. I dette afsnit vil vi tage udgangspunkt i det velkendte ordsprog \textit{"less is more"}, og forsøge at indskærpe modellen, så de bedste variable vægtes mest og de dårligere enten vægtes mindre eller fjernes helt. Robert Tibshirani (1996)\cite{RobertTibshirani} foreslår en metode kaldet lasso \textit{(least absolute shrinkage and selection operator)} til at identificere, hvor godt de forskellige parametre beskriver udfaldene og justerer deres koefficienter derefter. Lasso-optimeringsproblemet tager som tidligere udgangspunkt i at maksimalisere likelihooden, men nu under en bibetingelse:
 \begin{align*}
 &\max_{\beta,\,\theta} \Big{\{}\ell(\beta,\theta)\Big{\}} \\
 &\text{u.b.b. }\sum_{i=1}^k|\beta_i|\leq s,
@@ -841,20 +878,22 @@ Vi omskriver lasso-problemet på \textit{Lagrange-form}, da vi senere hen benytt
 \begin{align*}
 \max_{\beta,\,\theta} \Big{\{}\ell(\beta,\theta)-\lambda\sum_{i=1}^k|\beta_i|\Big{\}}=\min_{\beta,\,\theta} \Big{\{}-\ell(\beta,\theta)+\lambda\sum_{i=1}^k|\beta_i|\Big{\}},\text{ hvor }\beta
 \end{align*}
-hvor $\lambda\geq0$ er en strafparameter tilsvarende $s$, og beskriver hvor objektfunktionen skal straffes i forhold de normerede $\beta$-koefficienter. $\lambda$ og $s$ har et inverst forhold, så når $\lambda$ er høj, er $s$ lav. Hvis $s\geq\sum_i^k\|\beta_i|\iff \lambda=0$ vil lasso løsningen være lig maksimum likelihood løsningen, men hvis $s=\frac{1}{\delta}\sum_i^k\|\beta_i|$ vil koefficienterne gennemsnitligt mindskes til $\frac{1}{\delta}$ af hvad de var før. Sammenhængen mellem $\lambda$ og $s$ er vist i special
-\subsection{Lasso parameterestimering}
-\textcolor{blue}{For at forklare effekten af lasso på parametrene, vil vi tage udgangspunkt i en lineær model med ortogonal designmatrice, fordi vi i det tilfælde kan skrive resultatet ned eksplicit. Når X er ortogonal er $X^T=X^{-1}$, så \textit{least squares} løsningen bliver:}
+hvor $\lambda\geq0$ er en strafparameter tilsvarende $s$, og beskriver hvor objektfunktionen skal straffes i forhold de normerede $\beta$-koefficienter. $\lambda$ og $s$ har et inverst forhold, så når $\lambda$ er høj, er $s$ lav. Sammenhængen mellem $s$ og $\lambda$ er vist for en lineær model med ortogonal designmatrice i slutningen næste underafsnit (4.3).
+
+
+\subsection{Lineær Model med Ortogonal Designmatrice Eksempel}
+For at forklare effekten af lasso på parametrene, vil vi tage udgangspunkt i en lineær model med ortogonal designmatrice, fordi vi i det tilfælde kan skrive resultatet ned eksplicit. Når X er ortogonal er $X^T=X^{-1}$, så \textit{least squares} løsningen bliver:
 \begin{align*}
 \hat{\beta}=\big{(}X^TX\big{)}^{-1}X^Ty=X^Ty.
 \end{align*}
 Lasso-problemet for en lineær model bliver:
 \begin{align*}
 &\min_\beta \Big{\{}\big{(}y-X\beta\big{)}^T\big{(}y-X\beta\big{)}+\lambda\sum_{i=1}^k|\beta_i|\Big{\}}=\min_\beta \Big{\{}y^Ty+X^TX\beta^T\beta-2y^TX\beta+\lambda\sum_{i=1}^k|\beta_i|\Big{\}},\\
-\intertext{thi $y^Ty$ er uafhængig af $\beta$, $X^TX=1$ og $\hat{\beta}=X^Ty$ omskriver vi problemet til:}
+\intertext{da $y^Ty$ er uafhængig af $\beta$, $X^TX=1$ og $\hat{\beta}=X^Ty$ omskriver vi problemet til:}
 &\min_\beta \Big{\{}2\beta^2-\hat{\beta}\beta+\lambda\sum_{i=1}^k|\beta_i|\Big{\}}=\min_\beta \Big{\{}\sum_{i=1}^k\Big{(}2\beta_i^2-\hat{\beta_i}\beta_i+\lambda |\beta_i|\Big{)}\Big{\}}.\\
 \intertext{Objektfunktion er nu en sum af k identiske problemer, som vi løser hver for sig. Vi tager udgangspunkt i det i'te problem, og får objektfunktionen:}
 &f(\beta_i)=-2\hat{\beta}_i\beta_i+\beta_i^2+\lambda|\beta|.\\
-\intertext{Thi vi ønsker at minimere objektfunktionen må det gælde, at $\hat{\beta}_i>0\rightarrow\beta_i\geq0$, for ellers ville objektfunktionen kunne mindskes ved at skifte fortegnet for $\beta_i$, og ligeledes må det gælde, at $\hat{\beta}_i<0\rightarrow\beta_i\leq0$ Ved at differentier og sætte lig 0 fås den afledte:}
+\intertext{Eftersom vi ønsker at minimere objektfunktionen må det gælde, at $\hat{\beta}_i>0\rightarrow\beta_i\geq0$, for ellers ville objektfunktionen kunne mindskes ved at skifte fortegnet for $\beta_i$, og ligeledes må det gælde, at $\hat{\beta}_i<0\rightarrow\beta_i\leq0$ Ved at differentier og sætte lig 0 fås den afledte:}
 &f'(\beta_i)=-2\sgn\big{(}\hat{\beta_i}\big{)}\hat{\beta_i}+2\beta_i+\lambda. \\
 \intertext{Ved at isolere $\beta_i$ og gange begge sider med fortegnet for $\beta_i$ (fortegnet for $\hat{\beta_i}$), for at sikre positivt fortegn på venstre siden, fås:}
 &\beta_i=\sgn\big{(}\hat{\beta_i}\big{)}\Big{(}\sgn\big{(}\hat{\beta_i}\big{)}\hat{\beta_i}-\frac{1}{2}\lambda\Big{)}=\sgn\big{(}\hat{\beta_i}\big{)}\big{(}|\hat{\beta_i}|-\frac{1}{2}\lambda\big{)},\\
@@ -865,7 +904,7 @@ Lasso-problemet for en lineær model bliver:
 \intertext{så}
  &\hat{\beta}^{\text{lasso}}=\sgn\big{(}\hat{\beta}\big{)}\big{(}|\hat{\beta}|-\frac{1}{2}\lambda\big{)}^{+}\label{lig:LassoLøsning}
 \end{align}
-Vi ser tydeligt, at når $\lambda$ stiger, går $\hat{\beta}_i^{\text{lasso}}$ mod 0, samt at $\lambda\geq2|\hat{\beta}_i|\rightarrow \hat{\beta}_i^{\text{lasso}}=0$. Det vil sige, at i forbindelse med at $\lambda$ stiger vil lasso-estimaterne gå mod 0, samt at når $\lambda$ bliver tilpas stor vil en eller flere koefficienter sættes lig 0, hvilket betyder at lasso løbende træffer et valg af underum. Idéen er nu, at når $|\beta|$-koefficienterne mindskes, mindskes variansen af de estimerede sandsynligheder, hvilket medfører at modellens prædiktionsfejl mindskes. Dette sker dog på bekostning af, at når $|\beta|$-koefficienterne mindskes, medfører det også at den kvadrerede bias stiger, hvilket øger modellens forventede fejl. Variansen falder, da sandsynlighederne bliver mindre påvirket af deres kovariater. Den kvadrerede bias stiger, da lasso trækker estimaterne mod 0 og væk fra de centrale løsninger. Ved justering af $\lambda$ bliver modellens forventede prædiktionsfejl altså trukket i hver sin retning på grund af ændringer i bias og varians. Dette forhold mellem bias og varians kaldes \textit{The Bias-Variance Decomposition}\cite{ESL}. Humlen er så, at finde den $\lambda$ der minimerer de forventede prædiktionsfejl.\par
+Vi ser tydeligt, at når $\lambda$ stiger, går $\hat{\beta}_i^{\text{lasso}}$ mod 0, samt at $\lambda\geq2|\hat{\beta}_i|\rightarrow \hat{\beta}_i^{\text{lasso}}=0$. Det vil sige, at i forbindelse med at $\lambda$ stiger vil lasso-estimaterne gå mod 0, samt at når $\lambda$ bliver tilpas stor vil en eller flere koefficienter sættes lig 0, hvilket betyder at lasso løbende træffer et valg af underum. Idéen er nu, at når $|\beta|$-koefficienterne mindskes, mindskes variansen af de estimerede sandsynligheder, hvilket medfører at modellens prædiktionsfejl mindskes. Dette sker dog på bekostning af, at når $|\beta|$-koefficienterne mindskes, medfører det også at den kvadrerede bias stiger, hvilket øger modellens forventede fejl. Variansen falder, da sandsynlighederne bliver mindre påvirket af deres kovariater. Den kvadrerede bias stiger, da lasso trækker estimaterne mod 0 og væk fra de centrale løsninger. Ved justering af $\lambda$ bliver modellens forventede prædiktionsfejl altså trukket i hver sin retning på grund af ændringer i bias og varians. Dette forhold mellem bias og varians kaldes \textit{The Bias-Variance Decomposition} \cite{ESL}. Humlen er så, at finde den $\lambda$ der minimaliserer de forventede prædiktionsfejl.\par
 Vi ønsker at vise forholdet mellem $\lambda$ og $s$, og vil gøre det med udgangspunkt i den lineære model med ortogonal designmatrice, hvor vi kender lasso-løsningen: Lad $f:\rm I\!R^k \rightarrow \rm I\!R$ være en konveks tabsfunktion, så vil for et hvilket som helst vektor-par $(\beta, \hat{\beta})$ i $f$'s mængde og for en $b\in [0,1]$ gælde, at
 \begin{align*}
     f(b\beta+(1-b)\hat{\beta})&\leq bf(\beta)+(1-b)f(\hat{\beta}),
@@ -880,9 +919,9 @@ Vi ønsker at vise forholdet mellem $\lambda$ og $s$, og vil gøre det med udgan
 Nu kan vi med udgangspunkt i $\hat{\beta}^{\text{lasso}}$-løsningen fra ligning (\ref{lig:LassoLøsning}), opstille $s$ som funktion af $\lambda$ når $0 < s < \sum_i^k\hat{\beta}_i$ (s er aktiv og større end nul):
  \begin{align*}
 s&=\sum_i^k\Big{(}|\hat{\beta}_i^{\text{lasso}}|\big{)}=\sum_i^k\big{(}|\hat{\beta}_i|-\frac{1}{2}\lambda\big{)}^{+}
-\intertext{hvorfra vi tydeligt ser, at der er en én til én korrespondance mellem $s$ og $\lambda$, hvor s er lav når $\lambda$ er høj, samt $s\geq \hat{\beta}\iff \lambda=0$, hvor $\hat{\beta}^{\text{lasso}}=\hat{\beta}$}
+\intertext{hvorfra vi tydeligt ser, at der er en én til én korrespondance mellem $s$ og $\lambda$, hvor s er lav når $\lambda$ er høj. Vi ser, at hvis $s=\frac{1}{\delta}\sum_i^k\|\beta_i|$ vil koefficienterne gennemsnitligt mindskes til $\frac{1}{\delta}$ af hvad de var før,samt $s\geq \hat{\beta}\iff \lambda=0$, hvor $\hat{\beta}^{\text{lasso}}=\hat{\beta}$.}
 \end{align*}
-Figur \ref{fig:lasso2dim} er hentet fra Elements of Statistical Learning\cite{ESL}, og viser en todimensionel løsning til et lasso-optimeringsproblem. Den blå diamant illustrer L1-norm bibetingelsen $|\beta_1| + |\beta_2| \leq s$. De røde elipser viser konturer for tabsfunktionen, og løsningen ligger på randen af s og vil være den elipse kommer tættest på $\hat{\beta}$(least square løsningen). Hvis løsningen er en hjørneløsningen vil en af parametrene være 0, som vist på figuren (hvor $\beta_2=0$). 
+Figur \ref{fig:lasso2dim} er hentet fra Elements of Statistical Learning \cite{ESL}, og viser en todimensionel løsning til et lasso-optimeringsproblem. Den blå firkant illustrer L1-norm bibetingelsen $|\beta_1| + |\beta_2| \leq s$. De røde elipser viser niveaukurver for tabsfunktionen, og løsningen ligger på randen af s og vil være den elipse der kommer tættest på $\hat{\beta}$(least square løsningen). Hvis løsningen er en hjørneløsningen vil en af parametrene være 0, som vist på figuren (hvor $\beta_1=0$). 
 \begin{figure}[h!]
   \centering
     \begin{subfigure}[b]{0.48\linewidth}
@@ -895,18 +934,21 @@ Figur \ref{fig:lasso2dim} er hentet fra Elements of Statistical Learning\cite{ES
     \caption{}
     \label{fig:lasso2dim}
   \end{subfigure}
-  \caption{\textit{Venstre figur (a) illustrere en lasso-løsningen med én parameter, og viser minimaliseringsproblemet af tabsfunktionen $f=\beta^2-5\beta$ under L1-norm bibetingelsen $s$ . De lodrette blå streger illustrer bibetingelsen $|\beta|\leq s=1$. Højre Figur (b) er en illustration af lassoløsningen med to parametre. Den blå diamant illustrere L1-norm bibetingelsen $|\beta_1| + |\beta_2| \leq  s$ og de røde elipser konturer af objektfunktionen. Højre figur er hentet fra Elements of Statistical Learning \cite{ESL}}.}
+  \caption{\textit{Venstre figur (a) illustrerer lasso-løsningen med én parameter, og viser minimaliseringsproblemet af tabsfunktionen $f=\beta^2-5\beta$ under L1-norm bibetingelsen $s$. De lodrette blå streger illustrerer bibetingelsen $|\beta|\leq s=1$. Højre Figur (b) er en illustration af lassoløsningen med to parametre. Den blå firkant illustrerer L1-norm bibetingelsen $|\beta_1| + |\beta_2| \leq  s$ og de røde elipser er niveaukurver af objektfunktionen. Højre figur er hentet fra Elements of Statistical Learning \cite{ESL}}.}
 \label{fig:lassofigure}\end{figure}
+\subsection{Standardfejl}
+Standardfejl på parametre estimeret ved brug af lassostraf er er stadig et diskuteret emne. Da lasso estimaterne hverken er lineære eller differentiable er det svært at beregne præcise standardfejl. En løsning til dette problem er, at approksimere lasso-straffen med en differentiabel funktion. Ved en differentiabel approksimation kan kovariansmatricen approksimeres som sædvanlig, ved den inverse observation, og standardfejlene som kvadratroden af dennes diagonal. Der er dog stadig det problem, at de estimerede standardfejl tilhørende paramtrene som er blevet fravalgt (straffet ud af modellen) vil være 0, hvilket er misvisende.
+
 \subsection{Implementering af lasso}
-Fremgangsmåden i implementeringen af lasso er den samme for vores to versioner af Rao-Kupper modellen. Derfor vælger vi som nævnt, at tage udgangspunkt i den dynamiske model når vi viser, hvordan vi implementerer lasso. \par
-Ændringerne i de estimerede sandssynligheder ved implementering af lasso sker i det $\hat{\beta}^{\text{lasso}}$-koefficienterne bliver funktioner af $\lambda$. \textcolor{blue}{Som vist for en lineær model med ortogonal designmatrice.} I den dynamiske Rao-Kupper model med lasso-straf opskriver vi den forventede sandsynlighed for at hold $i$ vinder over hold $j$ som:
+Fremgangsmåden i implementeringen af lasso er den samme for vores to versioner af Rao-Kupper modellen. Derfor vælger vi som nævnt, at tage udgangspunkt i den dynamiske model, når vi viser, hvordan vi implementerer lasso. \par
+Ændringerne i de estimerede sandssynligheder ved implementering af lasso, sker i det $\hat{\beta}^{\text{lasso}}$-koefficienterne bliver funktioner af $\lambda$. Som vist for en lineær model med ortogonal designmatrice. I den dynamiske Rao-Kupper model med lasso-straf opskriver vi den forventede sandsynlighed for at hold $i$ vinder over hold $j$ som:
 \begin{align}
-    \hat{p}^{\text{lasso}}_{i\cdot ij}(t)=P\big{\{}\hat{Y}_{i}(t)>\hat{Y}_{j}(t)\big{\}}
-    &=\frac{\hat{\pi}_i\big{(}x_i(t,\alpha),\hat{\beta}(\lambda)\big{)}}{\hat{\pi}_i\big{(}x_i(t,\alpha),\hat{\beta}(\lambda)\big{)}+\hat{\theta}\hat{\pi}_j\big{(}x_j(t,\alpha),\hat{\beta}(\lambda)\big{)}}\\
+    \hat{p}^{\text{lasso}}_{i\cdot ij}(t)
+    &=\frac{\hat{\pi}_i\big{(}x_i(t,\alpha),\hat{\beta}(\lambda)\big{)}}{\hat{\pi}_i\big{(}x_i(t,\alpha),\hat{\beta}(\lambda)\big{)}+\hat{\theta}\hat{\pi}_j\big{(}x_j(t,\alpha),\hat{\beta}(\lambda)\big{)}}\nonumber\\
     &=\frac{1}{1+e^{-\big{(}x_i^T(t,\alpha)\hat{\beta}(\lambda)-x_j^T(t,\alpha)\hat{\beta}(\lambda)-\eta\big{)}}}.
     \label{func:pdynlasso}
 \end{align}
-\textcolor{blue}{Da Newton-Rhapson algoritmen kræver at funktionen der ønskes maksimaliseret er to gange differentiabel og strafledet $\lambda |\beta|$ kun er én gang differentiabel med hensyn til $\beta$, approksimerer vi strafledet med den glatte funktion $\lambda(\sqrt{\beta^2+C^2})\approx\lambda |\beta|$ når $C\rightarrow 0$, for forsat at anvende Newton-Rhapson algoritmen til at estimere vores parametre. Bemærk at vi i resten af projektet refererer til dette strafled som lasso, på trods af at det er en approksimation. Maksimaliseringsproblemet til estimering og udvælgelse af lassoparametrene bliver:}
+Da Newton-Rhapson algoritmen kræver, at funktionen der ønskes maksimaliseret er to gange differentiabel, og strafledet $\lambda |\beta|$ kun er én gang differentiabel med hensyn til $\beta$, approksimerer vi strafledet med den glatte funktion $\lambda(\sqrt{\beta^2+C^2})\approx\lambda |\beta|$ når $C\rightarrow 0$. Bemærk at vi i resten af projektet refererer til dette strafled som lasso, på trods af at det er en approksimation. Maksimaliseringsproblemet til estimering og udvælgelse af lassoparametrene bliver:
 \begin{align*}
 \max_{\beta,\,\theta} &\Big{\{}\ell\Big{(}\beta,\theta\Big{|}x(t,\alpha),y_{ij}(t),r_{ij}(t)\Big{)}-\lambda \Big{(}\sqrt{\beta^2+C^2}\Big{)}\Big{\}}\\
 =\max_{\beta,\,\theta} 
@@ -914,9 +956,7 @@ Fremgangsmåden i implementeringen af lasso er den samme for vores to versioner 
 + y_{j\cdot ij}(t)\log\Big{(}\frac{\pi_j}{\pi_j+\theta\pi_i}\Big{)}\\
 &+ \big{(}r_{ij}(t)-y_{i\cdot ij}(t)-y_{j\cdot ij}(t)\big{)} \log\Big{(}\frac{(\theta^2-1)\pi_i \pi_j}{(\pi_i+\theta\pi_j)(\pi_j+\theta\pi_i)}\Big{)}\Big{]}-\lambda \Big{(}\sqrt{\beta^2+C^2}\Big{)}\Big{\}},
 \end{align*}
-\textcolor{blue}{hvor $\pi_i=\pi_i\big{(}x_i^T(t,\alpha),\beta(\lambda)\big{)}$. For at gøre konvergeringen hurtigere initialiseres problemet med maksimum likelihood estimaterne $\beta=\hat{\beta}$ og $\theta=\hat{\theta}$. Udvælgelsen af parametrene sker ved baglæns elimination, hvor vi initialisere med samtlige parametre og efterfølgende fjerner dem hvis de bliver 0. Idet vi løser problemet numerisk er det nødvendigt, at have en grænseværdi for, hvornår vi anser en parameter tæt nok på 0 til at være 0. Efter \textit{trial and error}, synes vi, at en nedre grænseværdi på $10^{-5}$ for parametrene virker fornuftig, og giver en fin spredning af fravælgelsen; så hvis $\beta_k<10^{-5}$ eller fortegnet for $\beta_k$ ændres ved en Newton-Rhapson iteration, sættes $\beta_k=0$. Hvis grænsen sættes meget strengere vil parametrene kunne sættes markant under vores Newton-Rhapson konvergerings tolorence for samlet ændring i parametrene på $10^{-6}$, og derfor ikke blive fjernet. Hvis grænsen sættes meget mildere vil de fleste parametre blive fjernet allerede ved meget lave $\lambda$ værdier og det vil derfor være svært at skelne mellem hvor godt de forskellige parametre beskriver styrkerne. Figur \ref{fig:DBetaLasso} viser $\hat{\beta}^{\text{lasso}}$-koefficienterne mod $\lambda$ i den dynamiske model og den tilhørende algoritme til estimering og udvælgelse parametrene er skrevet som pseudokode i \textit{Algorithm 3}}\\
-\sout{Til at implementere lasso-straffen, approksimerer vi strafledet med en glat udgave, \textcolor{blue}{hvorved vi sørger for at den er differentiabel}, $\lambda |\beta| = \lambda(\sqrt{\beta^2+C^2})$ hvor vi lader $C\rightarrow 0$. Vi kan dermed ikke antage at vores estimerede \textcolor{blue}{parameterkoefficienter} bliver lig 0, og derfor sætter vi en grænse for hvor tæt de må være på 0, før vi fjerner dem. Denne grænse skal selvfølgelig være så lav at det giver mening at fjerne dem, hvorfor vi vælger at sætte $\beta_k$ lig 0 og dermed fjerne den når $\beta_k<10^{-6}$. Derudover sætter vi også $\beta_k = 0$, i situationen hvor $\beta_k<10^{-5}$ samt at den skifter fortegn i den efterfølgende iteration. Dette gøres, under tesen om at parameteren er uden betydning, eftersom den gennemsnitligt ligger meget tæt på 0\textcolor{blue}{vagt argument}. Eftersom vi fjerner en parameter når den skifter fortegn, er det vigtigt at de initialiseringsværdier vi vælger har de fortegn, som vi forventer de konvergerer mod. Derfor vælger vi at initialisere $\beta_0$ og $\theta_0$, med $\hat{\beta}_{MLE}$ og $\hat{\theta}_{MLE}$ estimaterne for $\lambda=0$. Hvilket vil sige at vi estimerer $\beta$'erne ud fra baglænselimination, hvor vi altså starter med samtlige $\beta$'er for hver $\lambda$ vi tester.
-Algoritmen til at estimere parametrene med lasso-straf, kan læses som pseudokode i \textit{Algorithm 3}}.\\
+hvor $\pi_i=e^{\big{(}x_i^T(t,\alpha),\beta(\lambda)\big{)}}$. For at gøre konvergeringen hurtigere initialiseres problemet med maksimum likelihood estimaterne $\hat{\beta}$ og $\hat{\theta}$. Udvælgelsen af parametrene sker ved baglæns elimination, hvor vi initialisere med samtlige parametre og efterfølgende fjerner dem hvis de bliver 0. Idet vi løser problemet numerisk, er det nødvendigt at have en grænseværdi for, hvornår vi anser en parameter tæt nok på 0 til at være 0. Efter \textit{trial and error}, synes vi, at en nedre grænseværdi på $10^{-5}$ for parametrene virker fornuftig, og giver en fin spredning af fravælgelsen; så hvis $\beta_k<10^{-5}$ eller fortegnet for $\beta_k$ ændres ved en Newton-Rhapson iteration, sættes $\beta_k=0$. Hvis grænsen sættes meget strengere, vil parametrene kunne sættes markant under vores Newton-Rhapson konvergerings tolerence for samlet ændring i parametrene på $10^{-6}$, og derfor ikke blive fjernet. Hvis grænsen sættes meget mildere, vil de fleste parametre blive fjernet allerede ved meget lave $\lambda$ værdier, og det vil derfor være svært at skelne mellem hvor godt de forskellige parametre beskriver styrkerne. Figur \ref{fig:DBetaLasso} viser $\hat{\beta}^{\text{lasso}}$-koefficienterne mod $\lambda$ i den dynamiske model, og den tilhørende algoritme til estimering og udvælgelse af parametrene er skrevet som pseudokode i \textit{Algorithm 3}.\\
 \begin{algorithm}[H]
 \SetAlgoLined
 \KwResult{$\max_{\beta,\,\theta} \Big{\{}\ell\Big{(}\beta,\theta|x,y_{ij}(t),r_{ij}(t),\lambda\Big{)}\Big{\}}$}
@@ -954,11 +994,11 @@ Algoritmen til at estimere parametrene med lasso-straf, kan læses som pseudokod
 \caption{Newton-Raphson for Dynamisk Model med lasso-straf}
 \label{alg: DYNLASSO}
 \end{algorithm}
-\section{Modelovervejelser og model udvælgelse}
-I dette afsnit gennemgår vi krydsvalidering, som bruges til at opdele vores datasæt, så vi kan bruge det hele som testsæt til at bestemme den optimale $\lambda$-værdi. Denne form for validering er isæt nyttig, når vi ikke har mange observationer med i datasættet. I vores eksempel prædikterer vi kun én sæson, og ydermere starter vi med at prædiktere fra 3. runde af, hvilket giver os 186 observationer.\sout{Dermed opdeler vi vores datasæt i en test og en træningsdel, og bestemmer vores}.\sout{  $\lambda$ bliver valgt ud fra minimalisering af en tabsfunktion.ud fra MSPE og Log-Loss prædiktionsfejlene. Efter vi har bestemt $\lambda$-værdien, fitter vi vores modeller på det fulde datasæt og tester dem på data fra Superligaen sæson 2014-2015. }
+\section{Modeloptimering og Prædiktionstest}
+I dette afsnit viser vi hvordan vi benytter krydsvalidering til at teste vores model og bestemme den optimale $\lambda$-værdi. Yderligere laver vi en validerings test for de optimerede modellers prædiktionsevne på fodboldsæsonen 2014-2015. 
 
 \subsection{Krydsvalidering}
-For at identificere den optimale størrelse af vores strafparameter $\lambda$ benytter vi os af krydsvalidering, som bruges til sammenligne prædiktionsfejlene for modellen for forskellige $\lambda$ værdier. Først deler vi observationerne op i $Q$ lige store dele, hvor vi lader $q\in \{q_1,...,q_Q\}$ betegne de forskellige delmægnder; dermed bliver $\{1,...,N\}\rightarrow\{q_1,...,q_Q\}$ en indeksering af det fulde datasæt. Vi kalder nu træningsdatasættet for $n_q$, som beskriver det fulde datasæt fratrukket den $q$'te mængde, og testdatasættet bliver så den $q$'te mængde, som ikke er inkluderet i træningsdatasættet. Idéen ved krydsvalidering er nu, at vi kan teste hele datamængden, ved at fitte modellen til hhv. $\{n_{q_1},...,n_{q_Q}\}$ og respektivt teste $\{q_1,...,q_Q\}$. Vi benttter dermed hver delmængde som testdatasæt én gang. Vi får altså en prædiktionsfejl for hver observation, og vores krydsvaliderings estimat af modellens prædiktionsfejl bliver dermed:
+For at identificere den optimale størrelse af vores strafparameter $\lambda$, benytter vi os af krydsvalidering, som bruges til at sammenligne prædiktionsfejlene for modellen for forskellige $\lambda$ værdier. Først deler vi observationerne op i $Q$ lige store dele, hvor vi lader $q\in \{q_1,...,q_Q\}$ betegne de forskellige delmægnder; dermed bliver $\{1,...,N\}\rightarrow\{q_1,...,q_Q\}$ en indeksering af det fulde datasæt. Vi kalder nu træningsdatasættet for $n_q$, som beskriver det fulde datasæt fratrukket den $q$'te mængde, og testdatasættet bliver så den $q$'te mængde, som ikke er inkluderet i træningsdatasættet. Idéen ved krydsvalidering er nu, at vi kan teste hele datamængden, ved at fitte modellen til henholdsvis $\{n_{q_1},...,n_{q_Q}\}$ og respektivt teste $\{q_1,...,q_Q\}$. Vi benytter dermed hver delmængde som testdatasæt én gang. Vi får altså en prædiktionsfejl for hver observation, og vores krydsvaliderings estimat af modellens prædiktionsfejl bliver dermed:
 \begin{align*}
 KV\big{(}\ell_{\text{dyn}}(\hat{\beta}_{-q},\hat{\theta}_{-q})\big{)}&=\frac{1}{Q}\sum_{q=q_1}^{q_Q}\mathcal{T}\big{(}\hat{\beta}_{-q},\hat{\theta}_{-q}|x,y_{ij}\big{)},\\
 \intertext{og for en givet strafparameter $\lambda$:}
@@ -972,9 +1012,9 @@ $\lambda$ vælges ud fra minimalisering af en tabsfunktion (modellens forventede
 \intertext{eller ved brug af log-tabsfunktion:}
 &\min_{\lambda}\Big{\{}\frac{1}{N}\sum_{q=q_1}^{q_Q}\sum_{t\in q}\sum_{i<j}-\Big{[}y_{i\cdot ij}(t)\log\big{(}\hat{p}_{i\cdot ij}(t)\big{)}+y_{j\cdot ij}(t)\log\big{(}\hat{p}_{j\cdot ij}(t)\big{)}+y_{0\cdot ij}(t)\log\big{(}\hat{p}_{0\cdot ij}(t)\big{)}\Big{]}\Big{\}},
 \end{align*}
-hvor de estimerede sandsynligheder, beregnet som i (\ref{func:pdynlasso}), er funktioner af $\lambda$.
-\subsection{Estimater - find titel}
-For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $\lambda$'er, har vi i Figur (\ref{fig:DBetaLasso}) og Figur (\ref{fig:SBetaLasso}) plotted de estimerede $\beta$-koefficienter mod $\lambda$ for henholdsvis den dynamiske model og Rao-Kupper. Bemærk, at vi har log transformeret første aksen for Rao-Kupper. Vi ser på plotted af den dynamiske model, at især kovariaterne FifaRating, HjemmeBane og Tilskuere kræver en høj $\lambda$-værdi før de sættes lig 0. Hvorimod syv af kovariaterne bliver sat lig 0 i intervallet $\lambda \in [0,10]$. Generelt ser vi, at koefficienterne falder stødt når $\lambda$ stiger. Fravælgelsen af parametre i Rao-Kupper er mere delte, hvor syv af parametrene bliver sat lig 0 for $\lambda<1$, hvorefter Mål, MålLukketInd og Tilskuere går mod 0 - meget langsomt. At kovariaterne Mål og MålLukketInd går langsomt mod 0, skyldes at der er stor korrelation mellem målforskel og slutplacering i ligaen. Eftersom denne model prædikterer ud fra det fulde data vil de to kovariater have stor betydning. 
+hvor de estimerede sandsynligheder, beregnet som i (\ref{func:pdynlasso}), er funktioner af $\lambda$. Krydsvalidering er især smart ved datamængder med få observationer, idet de samme observationer både kan anvendes som træningssæt og testsæt.
+\subsection{Variabeludvælgelse}
+For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $\lambda$'er, har vi i Figur (\ref{fig:DBetaLasso}) og Figur (\ref{fig:SBetaLasso}) visualiseret de estimerede $\beta$-koefficienter mod $\lambda$ for henholdsvis den dynamiske model og Rao-Kupper. Bemærk, at vi har log transformeret første aksen for Rao-Kupper. Vi ser på figuren af den dynamiske model, at især kovariaterne FifaRating, HjemmeBane og Tilskuere kræver en høj $\lambda$-værdi før de sættes lig 0. Hvorimod syv af kovariaterne bliver sat lig 0 i intervallet $\lambda \in [0,10]$. Generelt ser vi, at koefficienterne falder stødt når $\lambda$ stiger. Fravælgelsen af parametre i Rao-Kupper er mere delte, hvor syv af parametrene bliver sat lig 0 for $\lambda<1$, hvorefter Mål, MålLukketInd og Tilskuere går mod 0 - meget langsomt. At kovariaterne Mål og MålLukketInd går langsomt mod 0, skyldes at der er stor korrelation mellem målforskel og slutplacering i ligaen. Eftersom denne model forudsiger ud fra det fulde data vil de to kovariater have stor betydning. 
 %\begin{figure}[h!]
 %  \centering
 %  \begin{subfigure}[b]{\linewidth}
@@ -999,12 +1039,12 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
 \end{figure}
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\textwidth]{SKLMSA.png}
+    \includegraphics[width=0.75\textwidth,height=0.6\textwidth]{SKLMSA.png}
     \caption{\textit{$\hat{\beta}^{\text{lasso}}$-koefficienter mod $\log\lambda$ i Rao-Kupper}}
     \label{fig:SBetaLasso}
 \end{figure}
-\par \sout{ Eftersom målet er at minimalisere vores prædiktionsfejl, skal vi udvælge den $\lambda$, der minimerer dem, hvilket vi som tidligere beskrevet gør brug af krydsvalidering.} Som nævnt ønsker vi at finde den strafstørrelse $\lambda$ der minimalisere vores prædiktionsfejl og vil finde denne størrelse ved brug af krydsvalidering. Vi har valgt at lave krydsvalidering på de 30 sidste runder af fodboldsæsonen 2014-2015 for, at kunne at dele observationerne op i 6 lige store dele $(Q=6)$. Det vil sige, at vi prædikterer 5 runder (30 kampe) ad gangen. Inddelingerne af runderne er som følgende; $\{4,8\},\{9,13\},\{14,18\},\{19,23\},\{24,28\},\{29,33\}$. Dette er gjort for begge modeller for at kunne sammenligne deres prædiktionsfejl. For hvert delmængde \sout{interval} estimerer vi $\hat{\beta}^{\text{lasso}}$ med $\lambda \in [0,30]$ for den dynamiske model og $\lambda \in [0,6]$ for Rao-Kupper. $\lambda$-intervallerne er valgt ud fra Figur \ref{fig:SBetaLasso} og \ref{fig:DBetaLasso}, med forventning om at alle parametre vil være fjernet ved slutningen af intervallet. \sout{For hver opdeling fitter vi modellerne og udregner MSPE og Log-Loss for hver af de udeladte runder.} Hver gang vi fjerner en parameter vil denne parameter forblive fjernet, og dermed ikke blive testet for de resterende $\lambda$'er. Figur (\ref{fig:Prædiktionsfejl}) viser plots af prædiktionsfejl, hvor hver linje på graferne repræsenterer prædiktionsfejlene for en kamp i forhold til $\lambda$. Hver $\lambda$ har altså 180 tilhørende prædiktionsfejl. \sout{De markante hak i alle graferne, skyldes vores selektering hvor der er fjernet en til flere parametre ved hvert af hakkene.} På Figur (\ref{fig:DynMSPELine}) og (\ref{fig:DynLogLossLine}) ser vi, at variansen i prædiktionsfejlene er faldende når $\lambda$ stiger, hvilket også er forventeligt jvf. \textit{The Bias-Variance Decomposition}. Derudover er det også en naturlig følge idet $\lambda \rightarrow \infty \Rightarrow |\hat{\beta}| \rightarrow 0 \Rightarrow \pi_i \rightarrow \pi_j \Rightarrow \hat{p}_{i\cdot ij} \rightarrow \hat{p}_{j \cdot ij}$ \sout{$\hat{\beta} \rightarrow 0 \Rightarrow \pi_i \approx \pi_j \Rightarrow \hat{p}_{i\cdot ij} \approx \hat{p}_{j \cdot ij}$}. Vi ser også, at nogle af de estimerede fejl næsten ikke blive påvirket af $\lambda$, hvilket skyldes kampe med udfaldet uafgjort idet vores estimerede sandsynligheder for uafgjort ikke ændrer sig  meget i forhold til $\lambda$. Det vil sige, at på trods af at vores estimerede $\beta$ koefficienter går mod $0$, og vores styrker dermed bliver tættere på hinanden, forbliver de estimerede sandsynligheder for uafgjort tæt på hinanden. Yderligere ser vi, at de største prædiktionsfejl mindskes når $\lambda$ stiger. De største prædiktionsfejl kommer fra kampe som er endt uafgjort og vores estimerede sandsynlighed for udfaldet uafgjort i den kamp er meget lille. Som nævnt går holdenes styrker mod hinanden når $\lambda \rightarrow \infy$, hvilket også betyder at vores estimerede sandsynligheder for udfaldet uafgjort (for fast $\theta$) er størst når $\lambda \rightarrow \infy$, hvorfor de største prædiktionsfejl mindskes når $\lambda$ stiger.\par
- Vi ser udviklingen af prædiktionsfejlene for Rao-Kupper i Figur \ref{fig:MSPEStat} og \ref{fig:LogLossStat}. De ændrer sig stort set ikke når $\lambda$ stiger, hvilket følger den udvikling vi så i Figur \ref{fig:StatiskLine}. Det tyder på at lasso-straffen, ikke har en lige så stor betydning for Rao-Kupper modellens prædiktionsevne, som den har i Den Dynamiske model. Dette underbygges yderligere af Figur (\ref{fig:Tabsfunktioner}), hvor vi ser at de gennemsnitlige prædiktionsfejl i den dynamiske model er mindst for $\lambda = 3$, hvorefter de stiger, og i Rao-Kupper ikke ændres meget. De er ikke uændret og vi ser, at de er mindst for $\lambda = 0.94$. Vi ser yderligere at for før lasso indføreres ($\lambda = 0$) har Rao-Kupper lavere prædiktionsfejl end den dynamiske model, men efter lasso har den dynamiske lavere prædiktionsfejl end Rao-Kupper. Tabel (\ref{tab:KVMSPELOGLOSS}) viser disse ændringer af prædiktionsfejl før og efter lasso, samt en \textit{baseline} som viser fejlene ved altid at gætte på de gennemsnitslige sandsynligheder for hjemmesejr, udesejr og uafgjort. \\
+\par  Eftersom målet er at minimalisere vores prædiktionsfejl, ønsker vi at identificere den $\lambda$, der minimerer dem, hvilket vi som nævnt gør ved brug af krydsvalidering. Vi har valgt at lave krydsvalidering på de 30 sidste runder af fodboldsæsonen 2015-2016, for at kunne at dele observationerne op i 6 lige store dele $(Q=6)$. Det vil sige, at vi forudsiger 5 runder (30 kampe) ad gangen. Inddelingerne af runderne er som følgende; $\{4,8\},\{9,13\},\{14,18\},\{19,23\},$ $\{24,28\},\{29,33\}$. Dette er gjort for begge modeller, for at kunne sammenligne deres prædiktionsfejl. For hver delmængde estimerer vi $\hat{\beta}^{\text{lasso}}$ med $\lambda \in [0,30]$ for den dynamiske model og $\lambda \in [0,6]$ for Rao-Kupper. $\lambda$-intervallerne er valgt ud fra Figur \ref{fig:DBetaLasso} \ref{fig:SBetaLasso}, med forventning om at alle parametre vil være fjernet ved slutningen af intervallet. Hver gang vi fjerner en parameter vil denne parameter forblive fjernet, og dermed ikke blive testet for de resterende $\lambda$'er. Figur (\ref{fig:Prædiktionsfejl}) viser plots af prædiktionsfejl, hvor hver linje på graferne repræsenterer prædiktionsfejlene for en kamp i forhold til $\lambda$. Hver $\lambda$ har altså 180 tilhørende prædiktionsfejl. På Figur (\ref{fig:DynMSPELine}) og (\ref{fig:DynLogLossLine}) ser vi, at variansen i prædiktionsfejlene er faldende når $\lambda$ stiger, hvilket også er forventeligt jvf. \textit{The Bias-Variance Decomposition}. Derudover er det også en naturlig følge idet $\lambda \rightarrow \infty \Rightarrow |\hat{\beta}| \rightarrow 0 \Rightarrow \pi_i \rightarrow \pi_j \Rightarrow \hat{p}_{i\cdot ij} \rightarrow \hat{p}_{j \cdot ij}$. Yderligere ser vi, at de største prædiktionsfejl mindskes når $\lambda$ stiger. De største prædiktionsfejl kommer fra kampe som er endt uafgjort og vores estimerede sandsynlighed for udfaldet uafgjort i de kampe er meget små. Som nævnt går holdenes styrker mod hinanden når $\lambda \rightarrow \infty$, hvilket også betyder at vores estimerede sandsynligheder for udfaldet uafgjort (for fast $\theta$) er størst når $\lambda \rightarrow \infty$, hvorfor de største prædiktionsfejl mindskes når $\lambda$ stiger. Samme sted som disse fejl slutter, ser vi også linjer som ikke ændrer sig meget i forhold til $\lambda$. Det er uafgjorte kampe for hold med styrker, som er tæt på hinanden - hvor der i forvejen er estimeret en høj sandsynlighed for udfaldet uafgjort.\par
+ Vi ser udviklingen af prædiktionsfejlene for Rao-Kupper i Figur \ref{fig:MSPEStat} og \ref{fig:LogLossStat}. De ændrer sig stort set ikke når $\lambda$ stiger, hvilket følger den udvikling vi så i Figur \ref{fig:SBetaLasso}. Det tyder på at lasso-straffen, ikke har en lige så stor betydning for Rao-Kupper modellens prædiktionsevne, som den har i Den Dynamiske model. Dette underbygges yderligere af Figur (\ref{fig:Tabsfunktioner}), hvor vi ser at de gennemsnitlige prædiktionsfejl i den dynamiske model er mindst for $\lambda = 3$, hvorefter de stiger, og i Rao-Kupper ikke ændres meget. De er ikke uændret og vi ser, at de er mindst for $\lambda = 0.94$. Vi ser yderligere at for før lasso indføreres ($\lambda = 0$) har Rao-Kupper lavere prædiktionsfejl end den dynamiske model, men efter lasso har den dynamiske lavere prædiktionsfejl end Rao-Kupper. Tabel (\ref{tab:KVMSPELOGLOSS}) viser disse ændringer af prædiktionsfejl før og efter lasso, samt en \textit{baseline} som viser fejlene ved altid at gætte på de gennemsnitslige sandsynligheder for hjemmesejr, udesejr og uafgjort. \\
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[b]{0.45\textwidth}
@@ -1021,7 +1061,7 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
     \hspace{0.2cm}
     \begin{subfigure}[b]{0.45\textwidth}
     \includegraphics[width=\textwidth]{LOGLOSSSTATISK1.png}
-    \caption{\textit{Log-prædiktionsfejl mod $\lambda$ for Rao-Kupper modellen}}
+    \caption{\textit{Log-prædiktionsfejl mod $\lambda$ for Rao-Kupper \textcolor{white}{modellen}}}
     \label{fig:LogLossStat}  
     \end{subfigure}
       \hspace{0.2cm}
@@ -1030,7 +1070,7 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
     \caption{\textit{Log-prædiktionsfejl mod $\lambda$ for den dynamiske model}}
     \label{fig:DynLogLossLine}  
     \end{subfigure}
-\caption{\textit{#NYE 500 x 500 PLOTS FOR STATISKPrædiktionsfejl ved krydsvalidering. Hver linje repræsentere fejlene for en fodboldkamp mod $\lambda$. Gennemsnittet er vist med en sort linje med MSPE som tabsfunktion og med en rød linje med log loss som tabsfunktion.}}
+\caption{\textit{Prædiktionsfejl ved krydsvalidering. Hver linje repræsentere fejlene for en fodboldkamp mod $\lambda$. Gennemsnittet er vist med en sort linje med MSPE som tabsfunktion og med en rød linje med log loss som tabsfunktion.}}
   \label{fig:Prædiktionsfejl}
 \end{figure}
 
@@ -1039,25 +1079,25 @@ For at få en idé om hvordan vores parametre ($\beta$) opfører sig for givne $
   \centering
 \begin{subfigure}[b]{0.45\textwidth}
 \includegraphics[width=\textwidth]{MSPEBARPLOTSTATNY1.png}
-    
     \caption{\textit{MSPE mod $\lambda$ for Rao-Kupper}}
     \label{fig:MSPEBarStat}
   \end{subfigure}
   \hspace{0.2cm}
     \begin{subfigure}[b]{0.45\textwidth}
     \includegraphics[width=\textwidth]{BARMSPENYALPHA.png}
+    \caption{\textit{Log-Loss mod $\lambda$ for Rao-Kupper}}
     \label{fig:MSPEBarDyn}  
     \end{subfigure}
     \hspace{0.2cm}
   \begin{subfigure}[b]{0.45\linewidth}
     \includegraphics[width=\textwidth]{STATLOGLOSSBARNY1.png}
-    \caption{\textit{Log loss mod $\lambda$ for Rao-Kupper}}
+    \caption{\textit{Log-Loss mod $\lambda$ for Rao-Kupper}}
     \label{fig:LogLossBarStat}
   \end{subfigure}
   \hspace{0.2cm}
       \begin{subfigure}[b]{0.45\linewidth}
 \includegraphics[width=\textwidth]{BARPLOTLOGALPHANY.png}
-    \caption{\textit{Log loss mod $\lambda$ for den dynamiske model}}
+    \caption{\textit{Log-Loss mod $\lambda$ for den dynamiske model}}
     \label{fig:LogLossBarDyn}  
     \end{subfigure}
 \caption{\textit{Plot af tabsfunktioner med tilhørende standardafvigelser mod $\lambda$ }}
@@ -1080,73 +1120,43 @@ Dynamisk Lasso ($\lambda=3$) & 0.607 & 1.018 \\
    \hline   
 \end{tabular} 
 \end{adjustbox}
-\caption{\label{tab:KVMSPELOGLOSS}\textit{Prædiktionsfejl for de to modeller med og uden lasso-straf, samt prædiktionsfejl for Baseline, som er lavet ud fra den konstante prædiktion $(\bar{Hjemmesejr},\bar{Udesjer}, \bar{Uafgjort}) = (0.456,0.322,0.222)$}}
+\caption{\label{tab:KVMSPELOGLOSS}\textit{Krydsvaliderings prædiktionsfejl for de to modeller med og uden lasso-straf, samt prædiktionsfejl for Baseline, som er lavet ud fra den konstante prædiktion $(\bar{Hjemmesejr},\bar{Udesjer}, \bar{Uafgjort}) = (0.456,0.322,0.222)$}}
 \end{table}
 \newpage
-Tabel \ref{tab:EstKoefOptLambda} viser de estimerede koefficienter tilhørende Rao-Kupper og den dynamiske model, hvor $\lambda$ (valgt ved krydsvalidering) er henholdsvis $0.94$ og $3$. I Rao-Kupper er der fire  parametre større end 0, og i den dynamiske model er der syv\# 9. Standardfejlene er ikke ændret meget i forhold til hvad de var før lasso-straffen, og vi konkludere derfor ikke noget nyt i forhold til deres signifikans.\\
-For at evaluere hvordan de to modeller med lasso præsterer på ukendt data, har vi valgt at teste dem på Superligaen for sæson 2014-2015, hvor vi starter fra 3. spillerunde. Vi måler dem igen op i mod hinanden med MSPE og Log-Loss prædiktionsfejl, og tilføjer yderligere en funktion for den gennemsnitslige \textit{profit}. Profitten bliver opstillet ud fra vi fordeler en sum penge lige ud på hver kamp. Vi satser $\hat{p}_{i\cdot ij}(t)\mathcal{C}$ på sejr til hold $i$, $\hat{p}_{j\cdot ij}(t)\mathcal{C}$ på sejr til hold $j$ og $\hat{p}_{o\cdot ij}(t)\mathcal{C}$, hvor $\mathcal{C}$ betegner hvor mange penge vi satser på hver kamp (vores marginale omkostninger). For at opstille profitten henter vi odds for hver af kampene. De odds vi måler op imod er gennemsnitlige odds fra diverse bookmakere og er hentet fra Oddsportal.com. Vi kalder oddsne for $odds_i(t),\; odds_j(t), \; odds_0(t)$, som henholdsvis repræsentere odds for sejr til hold $i$, odds for sejr til hold $j$ og odds for uafgjort tilhørende en kamp mellem hold $i$ og hold $j$ i spillerunde $t$. Den gennemsnitslige profit bliver dermed:
-\begin{align*}
-    \overline{\text{Profit}}&= \frac{1}{N}\sum_t\sum_{i<j}\Big{[} \underbrace{\mathcal{C}\big{(}\hat{p}_{i\cdot ij}(t)odds_i(t)y_{i\cdot ij}(t)+\hat{p}_{j\cdot ij}(t)odds_j(t)y_{i\cdot ij}(t)+\hat{p}_{0\cdot ij}(t)odds_0(t)y_{i\cdot ij}(t)\big{)}}_{MR} -\underbrace{\mathcal{C}}_{MC}\Big{]},
-\end{align*}
-hvor MR er den marginale omsætning ved hver kamp, og MC er den marginale omkostning ved hver kamp.
+Tabel \ref{tab:EstKoefOptLambda} viser de estimerede koefficienter tilhørende Rao-Kupper og den dynamiske model, hvor $\lambda$ (valgt ved krydsvalidering) er henholdsvis $0.94$ og $3$. I Rao-Kupper er der fire  parametre numerisk større end 0, og i den dynamiske model er der 9. Standardfejlene for de bevarede parametre er ikke ændret meget, i forhold til hvad de var før lasso-straffen, og vi konkluderer derfor ikke noget nyt i forhold til deres signifikans. Vi ser, at parametrene BoldBesiddelse, Skud og SkudIndenfor er fjernet fra begge modeller. Det kunne tyde på, at disse parametre ikke har en stor korrelation med udfaldene eller, at de har en stor korrelation med andre parametre. Det er forventeligt, at både Skud og Skudindenfor vil være positivt korrelerede med hinanden, samt med MålScoret. \\
 \begin{table}[ht!]
 \centering
 \begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{|l|cc|cc|}
+\begin{tabular}{|l|rrrr|rrrr|}
 \hline
-\multicolumn{1}{|l|}{} & \multicolumn{2}{l|}{Rao Kupper Model} & \multicolumn{2}{l|}{Dynamisk Model} \\\hline 
-Parameter & Estimeret Koefficient & SE & Estimeret Koefficient & SE\\
+\multicolumn{1}{|l|}{} & \multicolumn{4}{l|}{Rao Kupper Model} & \multicolumn{4}{l|}{Dynamisk Model} \\\hline 
+Parameter & $\hat{\beta}^{\text{lasso}}$ & SE &2.5\%&97.5\%& $\hat{\beta}^{\text{lasso}}$ & SE&2.5\%&97.5\%\\
  \hline
-HjemmeBaneFordel & - & - & 0.139 & 0.071\\
-SejrStreak & - & - & -0.150 & 0.105 \\
-FifaRating & - & - & 0.230 & 0.150 \\
-Hjørne & - & - & 0.150 & 0.130 \\
-OffSide  & - & - & -0.037 & 0.122 \\
-MålScoret  & 0.224 & 0.196 & 0.170 & 0.141 \\
-MålLukketInd  & -0.380 & 0.162 & - & -\\
-Tilskuere & 0.061 & 0.134 & - & -\\
-BoldBesiddelse & - & - & -0.062 & 0.123  \\
-Skud & - & - & - & -\\
-SkudIndenfor & - & - & - & -\\
-Frispark & -0.005 & 0.130 & - & -\\
-$\theta$ & 1.662 & 0.120 & 1.641 & 0.118\\
+HjemmeBaneFordel   & 0 & 0 & 0 & 0                 & 0.138  & 0.067 & 0.006 & 0.270\\
+SejrStreak         & 0 & 0 & 0 & 0                 & -0.087 & 0.119 & -0.321 & 0.146\\
+FifaRating         & 0 & 0 & 0 & 0                 & 0.359 & 0.146  & 0.073 & 0.646 \\
+Hjørne             & 0 & 0 & 0 & 0                 & 0.035 & 0.100  & -0.160 & 0.230\\
+OffSide            & 0 & 0 & 0 & 0                 & -0.015 & 0.099 & -0.210 & 0.179\\
+MålScoret          & 0.224 & 0.196 & -0.160 & 0.608         & 0.017 & 0.112 & -0.203 & 0.236\\
+MålLukketInd       & -0.380 & 0.162 & -0.698 & -0.062        & 0.083 & 0.114 & -0.141 & 0.307\\
+Tilskuere          & 0.061 & 0.134 & -0.202 & 0.324         & 0.091 & 0.125 & -0.154 & 0.336\\
+BoldBesiddelse     & 0 & 0 & 0 & 0                 & 0 & 0 & 0 & 0\\
+Skud               & 0 & 0 & 0 & 0                 & 0 & 0 & 0 & 0  \\
+SkudIndenfor       & 0 & 0 & 0 & 0                 & 0 & 0 & 0 & 0 \\
+Frispark           & -0.005 & 0.130 & -0.260 & 0.250        & -0.190 & 0.097 & -0.380 & 0.000\\
+$\theta$           & 1.662 & 0.120 & -1.427 & 1.897         & 1.643 & 0.119 & 1.411 & 1.876\\
    \hline   
 \end{tabular} 
 \end{adjustbox}
-\caption{\label{tab:EstKoefOptLambda}\textit{Estimerede parameter koefficienter for de to modeller med deres optimale $\lambda$-værdier fundet ved MSPE og Log-Loss prædiktionsfejl}}
+\caption{\label{tab:EstKoefOptLambda}\textit{Estimerede parametre for de to modeller fundet ved krydsvalidering}}
 \end{table}\\
-\begin{table}[thb!]
-\centering
-\begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{|l|ccc|}
-\hline 
-Model & MSPE & Log-Loss & \overline{Profit} \\
- \hline
-Rao Kupper Model & 0.618 & 1.030 & -0.034\\
-Dynamisk Model & 0.603 & 1.013 & -0.023 \\
-   \hline   
-\end{tabular} 
-\end{adjustbox}
-\caption{\label{tab:MSPELOGLOSODDSFEJL}\textit{Prædiktionsfejlene for Rao Kupper modellen og den Dynamiske model med de estimerede koefficienterne fra Table (\ref{tab:EstKoefOptLambda}).}}
-\end{table}\\
+Ud fra tesen om, at bookmakerenes odds har en korrelation med vores estimerede sandsynligheder for udfaldene, opstiller vi en profitfunktion for en simpel betting strategi. Vi satser $\hat{p}_{i\cdot ij}(t)\mathcal{C}$ på sejr til hold $i$, $\hat{p}_{j\cdot ij}(t)\mathcal{C}$ på sejr til hold $j$ og $\hat{p}_{0\cdot ij}(t)\mathcal{C}$, hvor $\mathcal{C}$ betegner hvor mange penge vi satser på hver kamp. For at opstille profitten henter vi odds for hver af kampene. De odds vi måler op imod er gennemsnitlige odds fra diverse bookmakere, og er hentet fra Oddsportal.com \cite{Oddsportal}. Vi kalder oddsne for $odds_i(t),\; odds_j(t), \; odds_0(t)$, som henholdsvis repræsenterer odds for sejr til hold $i$, odds for sejr til hold $j$ og odds for uafgjort tilhørende en kamp mellem hold $i$ og hold $j$ i spillerunde $t$. Dermed bliver funktionen for den gennemsnitslige profit:
+\begin{align}
+    \overline{\text{Profit}}&= \frac{1}{N}\sum_t\sum_{i<j}\Big{[} \underbrace{\mathcal{C}\big{(}\hat{p}_{i\cdot ij}(t)odds_i(t)y_{i\cdot ij}(t)+\hat{p}_{j\cdot ij}(t)odds_j(t)y_{j\cdot ij}(t)+\hat{p}_{0\cdot ij}(t)odds_0(t)y_{0\cdot ij}(t)\big{)}}_{\text{Marginal Gevinst}} -\underbrace{\mathcal{C}}_{Omk}\Big{]},\label{func:Profit}
+\end{align}
+hvor den marginale gevinst er gevinsten ved oddsne placeret på kampen mellem hold $i$ og $j$ i spillerunde t, og $\mathcal{C}$, tolker vi som den marginale omkostning eller pris for at placere disse odds. I Figur \ref{fig:OddsPlot} har vi taget de inverse af vores sandsynligheder for at sammenligne med bookmakernes udbudte odds fordelt på hjemmebanesejr, udebanesejr og uafgjort. Vi bruger dem som benchmark, men det skal tages in mente, at bookmakernes odds konverteret til sandsynligheder summerer over 1. Derudover er det også klart, at bookmakerne for at mindske risiko, justerer deres odds løbende i forhold til hvor store beløb der er placeret på de forskellige odds. For lave fittede værdier minder begge modellers estimerede odds, om bookmakernes odds, men for høje værdier stiger variansen. Vi ser en klar tendens til forøget varians ved høje fittede værdier. Derudover er det bemærkelsesværdigt, at for ikke-uafgjorte tyder det på at middelværdierne er ens for bookmakernes odds og de estimerede odds. Men for uafgjorte kampe, er der en klar tendens til at vores estimerede odds er højere end bookmakernes. Da bookmakernes sandsynligheder ikke summer til 1, er det klart at der vil være en forskel i middelværdier samlet set.  
 
-\clearpage
-\section{Diskussion}
-Til at estimere parametre i den dynamiske model valgte vi at sætte $\alpha=3$, eftersom det gav den største likelihoodværdi i vores insample test. Eftersom vi har valgt $\alpha$-værdien ved blot at fitte modellen på det fulde data, har vi ikke noget belæg for at denkante værdi vil passe godt på ukendt data. En anden og måske bedre metode til at vælge denne $\alpha$-værdi, ville være at udvælge den ved krydsvalidering, ligesom vi har valgt $\lambda$. Ydermere kunne der testes på flere års data, for at få et mere generelt billede af hvordan den influerer modellen. I det hele taget ville det være \sout{mere relevant}interessandt at estimere den Dynamiske models parametre ud fra flere års data, især når den skal bruges til at prædiktere på ukendt data. Det samme gælder for Rao-Kupper, hvis man gerne vil få et indblik i hvilke kovariater der influerer på rangeringen generelt. Hvorimod hvis det eneste der ønskes med Rao Kupper modellen, er at rangere nogle hold eller produkter, kan man med fordel estimere styrkerne uden brug af data med udgangspunkt i ligning (\ref{func:LikelihoodUdenBeta}). \textcolor{blue}{Ved at estimere styrkerne ved den metode, vil man også mindske risikoen for Type I og II fejl, eftersom der vil være færre parametre at teste.} Fodboldhold ikke det mest interessante at rangere, eftersom der allerede findes et regelsæt der bestemmer hvilke hold der er bedst rangeret, men tilgengæld giver det også et meget godt benchmark til hvordan modellernes evne til at rangere er. Vi så i Tabel \ref{tab:Styrkeestimater} at Rao-Kupper rangerer holdene bedst, når vi måler dem op imod den endelige stilling i Superligaen. Derimod så vi i Tabel (\ref{tab:KVMSPELOGLOSS}) og (\ref{tab:MSPELOGLOSODDSFEJL}) at den dynamiske model opnår mindre prædiktionsfejl i krydsvalideringen samt i prædiktionen på data fra Superligaen i sæson 2014-2015.\\
-På trods af at vi har fokuseret anvendelsen af disse modeller på fodboldhold, er der ikke nogen teoretisk forskel på om det er fodboldhold, vin, charter rejser eller noget helt fjerde der skal rangeres. I nogle produktkategorier har tid også en stor betydning, eksempelvis kan man forestille sig, at der er forskel på forbrugerpræferencerme af drikkevarer alt efter sæsonen, som giver anledning til at bruge $\alpha$-parametret, for at fange de trends der kan være i markedet. Her kan en spillerunde være en anden tidsindeling af eksempelvis et år, som gør det muligt at rangere et produkt ud fra forbrugernes præferencer de seneste uger/måneder fremfor at tage udgangspunkt i hele det sidste år. \\
-Hvis den Dynamiske Model anvendes med produkter, kan den ligeledes anvendes til at prædiktere hvordan en forbruger eller forbrugergruppe vil reagere på en gruppe af produkter. Her kan odds-fejlen bruges i en situation med en producent, hvor producenten estimerer sandsynligheden for at forbrugergruppen køber hvert af hans/hendes produkter, og derefter producerer en tilsvarende mængde af hvert produkt. Produkterne kan her, ligesom kampe har odds, have forskellige dækningsbidrag, og med udgangspunkt i sandsynligheder kontra dækningsbidrag, kan producenten optimere sin forventede profit. \\
-\# Kunne være interresandt at teste Rao-Kuppers rangerings evne før og efter lasso.
-\section{Konklusion}
-
-Målet med projektet var at redegøre for og anvende Rao Kuppers udvidelse af Bradley-Terry modellen, både til at rangere grupper samt til at estimere punktsandsynligheder til et udfald. Derudover ville vi ved brug af lasso forbedre både rangeringen samt de estimerede sandsynligheder, ved at fjerne de kovariater der havde en lav sammenhæng med udfaldende. \\
-\newline
-De to metoder vi har valgt til at anvende Rao Kupper modellen på, viste sig som forventet at have hver deres anvendelsesområde. Vores anvendelse af Rao Kupper modellen er bedst til at rangere holdene, hvor den Dynamiske model er bedst til at estimere punktsandsynligheder for udfald. Begge modeller blev ud fra tabsfunktionerne forbedret med lasso, men den Dynamiske model fik den største forbedring. Hvorvidt denne forbedring viser sig at være signifikant, kan vi ikke konkludere eftersom 
-\clearpage
-\section{Litteraturliste}
-Litteraturliste
-\clearpage
-\section{Appendiks}
-\begin{figure}[h!]
+\begin{figure}[ht!]
   \centering
   \begin{subfigure}[b]{0.4\textwidth}
     \includegraphics[width=\textwidth]{DynHjemmeOdds.png}
@@ -1154,41 +1164,87 @@ Litteraturliste
     \label{fig:DynHjemmeOdds}
   \end{subfigure}
     \hspace{0.2cm}
+    \begin{subfigure}[b]{0.4\linewidth}
+\includegraphics[width=\textwidth]{StatiskHjemmeOdds.png}
+    \caption{\textit{Rao Kupper estimerede odds for hjemme mod bookmaker odds}}
+    \label{fig:StatHjemmeOdds}  
+    \end{subfigure}
+  \hspace{0.2cm}
   \begin{subfigure}[b]{0.4\linewidth}
     \includegraphics[width=\textwidth]{DynUdeOdds.png}
     \caption{\textit{Dynamisk estimerede odds for ude mod bookmaker odds}}
     \label{fig:DynUdeOdds}
   \end{subfigure}
+        \hspace{0.2cm}
+  \begin{subfigure}[b]{0.4\linewidth}
+\includegraphics[width=\textwidth]{StatUdeOdds.png}
+    \caption{\textit{Rao Kupper estimerede odds for ude mod bookmaker odds}}
+    \label{fig:StatUdeOdds}  
+    \end{subfigure}
     \hspace{0.2cm}
     \begin{subfigure}[b]{0.4\textwidth}
     \includegraphics[width=\textwidth]{DynUafgjortOdds.png}
     \caption{\textit{Dynamisk estimerede odds for uafgjort mod bookmaker odds}}
     \label{fig:DynUafgjortOdds}  
     \end{subfigure}
-      \hspace{0.2cm}
-  \begin{subfigure}[b]{0.4\linewidth}
-\includegraphics[width=\textwidth]{StatiskHjemmeOdds.png}
-    \caption{\textit{Rao Kupper estimerede odds for hjemme mod bookmaker odds}}
-    \label{fig:StatHjemmeOdds}  
-    \end{subfigure}
           \hspace{0.2cm}
   \begin{subfigure}[b]{0.4\linewidth}
-\includegraphics[width=\textwidth]{DynUdeOdds.png}
-    \caption{\textit{Rao Kupper estimerede odds for ude mod bookmaker odds}}
-    \label{fig:StatUdeOdds}  
-    \end{subfigure}
-          \hspace{0.2cm}
-  \begin{subfigure}[b]{0.4\linewidth}
-\includegraphics[width=\textwidth]{DynUafgjortOdds.png}
+\includegraphics[width=\textwidth]{StatUafgjortOdds.png}
     \caption{\textit{Rao Kupper estimerede odds for uafgjort mod bookmaker odds}}
     \label{fig:StatUafgjortOdds}  
     \end{subfigure}
-\caption{\textit{Plots af estimerede odds mod bookmaker odds, for hjemmesejr, udesejr og uafgjort. Den sorte streg indikerer der hvor de estimerede odds er lig bookmaker odds}}
+\caption{\textit{Plots af estimerede odds mod bookmaker odds, for hjemmesejr, udesejr og uafgjort. Den sorte streg indikerer hvor de estimerede odds er lig bookmakernes odds. De estimerede odds er beregnet som de inverse sandsynligheder.}}
   \label{fig:OddsPlot}
 \end{figure}
-\clear
-\printbibliography %Printer referencer
+\clearpage
+Til at undersøge hvordan de to modeller med og uden lasso-straf præsterer på ukendt data, har vi valgt at teste dem på Superligaen for sæson 2014-2015, hvor vi starter fra 3. spillerunde. Vi måler dem igen op i mod hinanden med MSPE og Log-Loss prædiktionsfejl. Resultatet af undersøgelsen ses i Tabel \ref{tab:Test2014}. Vi ser at lasso i begge tilfælde forbedrer modellernes prædiktionsevne. Forbedring ses at være størst i Rao-Kupper, hvor prædtiktionsfejlen bliver mindskes med cirka 14\%.  Vi ser også, at den dynamiske model opnår den ben bedste prædiktionsevne både før og efter. Faktisk er den dynamiske uden lasso bedre end Rao-Kupper med lasso. Begge modeller ses, at være markant bedre end baseline modellen efter lasso.  
 
+\begin{table}[thb!]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{|l|ccc|}
+\hline 
+Model & MSPE & Log-Loss & \overline{Profit} \\
+ \hline
+Baseline & 0.649 & 1.074 & -0.067\\
+Rao Kupper Model & 0.720 & 1.191 & -0.057\\
+Dynamisk Model & 0.613 & 1.027 & -0.022\\
+Rao Kupper Model ($\lambda = 0.94$) & 0.618 & 1.030 & -0.034\\
+Dynamisk Model ($\lambda = 3$) & 0.603 & 1.012 & -0.023 \\
+   \hline   
+\end{tabular} 
+\end{adjustbox}
+\caption{\label{tab:Test2014}
+\textit{Prædiktionsfejl ved test af modellerne på data fra 2014-2015. De estimerede koefficienter for modellerne med lasso-straf ses i Tabel (\ref{tab:EstKoefOptLambda}). Profitten er udregnet fra profitfunktionen (ligning \ref{func:Profit}) med \mathcal{C}=1 }}
+\end{table}\\
+
+\clearpage
+\section{Diskussion}
+Vi har i projektet vist hvorpå Bradley-Terry modellen kan udvides til Rao-Kupper modellen, samt hvordan denne kan implementeres til både at rangere ud fra parvise sammenligninger, samt forudsige udfald af af parvise sammenligninger. Derudover har vi vist, hvordan lasso kan bruges til træffe parameterudvælgelse i modellen. Vi har implementeret modellen i praksis og valgt at teste den af på rangering af fodboldhold og prædiktion af udfald af fodboldkampe. Der er selvfølgelig forskellige måder at implementere modellen på, samt et utal af muligheder for, hvor modellen kan anvendes i praksis. Vi har i projektet "kun" anvendt op til 12 parametre. I et fremtidigt projekt, kunne det være spændende at indkludere endnu flere, for sandsynligvis at se en større forbedring ved lasso.\par
+Til at estimere parametrene i den dynamiske model valgte vi at sætte $\alpha=3$, eftersom det gav den største likelihoodværdi i vores insample test. Eftersom vi har valgt $\alpha$-værdien ved at sammenligne fits af modellen på 2015, har vi ikke noget belæg for at den værdi vil passe godt på ukendt data. En anden og måske bedre metode til at udvælge denne $\alpha$-værdi, ville være ved krydsvalidering, ligesom vi har valgt $\lambda$. Ydermere kunne der testes på flere års data, for at få et mere generelt billede af hvordan den influerer modellen. I det hele taget ville det være interessant at estimere den Dynamiske models parametre ud fra flere års data, især når den skal bruges til forudsige udfald på ukendt data. Det samme gælder for Rao-Kupper, hvis man gerne vil få et indblik i hvilke kovariater der influerer på rangeringen generelt. Hvorimod hvis det eneste der ønskes med Rao Kupper modellen, er at rangere hold eller produkter, kan man med fordel estimere styrkerne uden brug af kovariater med udgangspunkt i ligning (\ref{func:LikelihoodUdenBeta}). \textcolor{blue}{Ved at estimere styrkerne ved den metode, vil man også mindske risikoen for Type I og II fejl, eftersom der vil være færre parametre at teste.} \\ \newline 
+Fodboldhold er ikke det mest interessante at rangere, eftersom der allerede findes et regelsæt der bestemmer hvilke hold der er bedst rangeret, men tilgengæld giver det også et meget godt benchmark for hvordan modellernes evne til at rangere er. Vi så i Tabel \ref{tab:Styrkeestimater} at Rao-Kupper rangerer holdene bedst, når vi måler dem op imod den endelige stilling i Superligaen. Derimod så vi i Tabel (\ref{tab:KVMSPELOGLOSS}) og (\ref{tab:Test2014}) at den dynamiske model opnår mindre prædiktionsfejl i krydsvalideringen samt i prædiktionen på data fra Superligaen i sæson 2014-2015.\\
+På trods af at vi har fokuseret anvendelsen af disse modeller på fodboldhold, er der ikke nogen teoretisk forskel på om det er fodboldhold, vin, charter rejser eller noget helt fjerde der skal rangeres. Der vil selvfølgelig være forskel på, hvor tilgængeligt data til sådanne parvise sammenligninger er. I nogle produktkategorier har tid også en stor betydning, eksempelvis kan man forestille sig, at der er forskel på forbrugerpræferencer af drikkevarer alt efter sæsonen, som giver anledning til at bruge $\alpha$-parameteren, til at fange de trends der kan være i markedet. På samme vis, som vi opdelte sæsonen i spillerunder, kan en anden tilsvarende tidsopdeling være af et år, som gør det muligt at rangere et produkt ud fra forbrugernes præferencer de seneste uger/måneder, fremfor at tage udgangspunkt i hele det sidste år. \\\\
+Rao-kupper modellen kan ligeledes anvendes til at rangere produkter ud fra forbrugerpræferencer ved parvise sammenligninger.  
+Her kan profitfunktionen bruges i en situation med en producent, hvor producenten estimerer sandsynligheden for at forbrugergruppen køber hvert af hans/hendes produkter, og derefter producerer en tilsvarende mængde af hvert produkt. Produkterne kan her, ligesom kampe har odds, have forskellige dækningsbidrag, og med udgangspunkt i sandsynligheder kontra dækningsbidrag, kan producenten optimere sin forventede profit. \\
+\# Kunne være interresandt at teste Rao-Kuppers rangerings evne før og efter lasso.
+\# Vores Rangerings model  Rao-Kupper viser at Mal skoret og Mål lukket ind, er gode variable til at beskrive den endelig rangering af fodboldhold ved slutningen af en sæson. Dette kommer nok ikke som nogen overraskelse for nogle. Men hvis det var sammenlinging af produkter kunne det være vanskeligere at identificere disse problemer. \# skodsætning.
+\section{Konklusion}
+
+
+Vi har i opgaven vist, hvordan Rao-Kupper modellen kan bruges til at rangere ud fra parvise sammenligninger, samt hvordan modellen kan bruges til at forudsige udfald af parvise sammenligninger. Vi har udviklet og implementeret kode til at gøre dette i praksis og forbedret modellens prædiktionsevne ved brug af lasso-metoden. Vi har testet modellen til rangering af fodboldhold i den danske Superliga - resultatet er forskelligt fra den faktisk rangering ved 3-1-0 pointsystemet, men kommer tæt på. Det betyder ikke at resultatet er forkert. Det er blot en anden måde at rangere på. Derudover har vi testet modellens prædiktionsevne på udfald af fodboldkampe i den danske Superliga og vist lasso-metoden kan bruges til at forbedre denne. Derudover har vi vist, at vi ikke forkaster signifikans af parametrene hjemmebane fordel og Fifa-ratings når det gælder forudsigelse af kampes udfald ved et signifikansniveau på 5\%. 
+\\
+
+
+De to metoder vi har valgt at anvende Rao Kupper modellen på, viste sig som forventet at have hver deres anvendelsesområde. Vores anvendelse af Rao Kupper modellen er bedst til at rangere holdene, hvor den Dynamiske model er bedst til at estimere punktsandsynligheder for udfald. Begge modeller blev ud fra tabsfunktionerne forbedret med lasso, men den Dynamiske model fik den største forbedring. Hvorvidt denne forbedring viser sig at være signifikant, kan vi ikke konkludere eftersom 
+\clearpage
+\section{Litteraturliste}
+Litteraturliste
+\clearpage
+\section{Appendiks}
+
+\clearpage
+\printbibliography %Printer referencer
+\section{Ordforklaringer}
 \end{document}
 %\begin{figure}[h!]
 %  \centering
